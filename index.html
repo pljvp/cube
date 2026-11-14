@@ -1,0 +1,1067 @@
+<!doctype html>
+<html lang="nl" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Het raadsel van de kubus</title>
+<style>:root{
+  --bg:#111112;--surface:#1c1c1e;--ink:#f1f1ee;--muted:#9b9b97;--line:#2a2a2c;--off:#303033;
+  --accent:#f1f1ee;--on-accent:#111112;--focus:#9ab8ff;--ok:#6db3ff;--bad:#ffb454;
+  --cube-white:#f1f1ec;--cube-yellow:#f2c230;--cube-red:#d6382f;--cube-orange:#f08a24;--cube-blue:#2c63c9;--cube-green:#2e9e57;--cube-body:#121214;
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;--space-7:48px;
+  --btn-h:40px;--header-h:56px;--tab-h:44px;--r:2px;
+  --font-sans:system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --font-serif:"Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+[data-theme="light"]{
+  --bg:#f5f4f0;--surface:#eae9e4;--ink:#151515;--muted:#66665f;--line:#d9d8d2;--off:#cfcec8;
+  --accent:#151515;--on-accent:#f5f4f0;--focus:#2b59c3;--ok:#1f5fbf;--bad:#b45309;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:calc(var(--header-h) + var(--tab-h) + var(--space-4));-webkit-text-size-adjust:100%;overflow-anchor:none}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/24px var(--font-sans);overflow-anchor:none}
+button{font:inherit;color:inherit}
+.hidden{display:none!important}
+.wrap{max-width:720px;margin:0 auto;padding:0 var(--space-4)}
+
+/* kop, info en tabs */
+header{position:sticky;top:0;z-index:30;background:var(--bg);height:var(--header-h)}
+header .wrap{display:flex;align-items:center;height:100%}
+.title{margin:0 auto 0 0;font:600 16px/24px var(--font-sans);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ibtn{width:36px;height:var(--btn-h);display:grid;place-items:center;background:none;border:0;border-radius:var(--r);cursor:pointer;font:600 14px/1 var(--font-sans)}
+.ibtn:last-child{margin-right:-8px}
+.ibtn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.75}
+.tabbar{position:sticky;top:var(--header-h);z-index:29;background:var(--bg);border-bottom:1px solid var(--line)}
+.tabs{max-width:720px;margin:0 auto;display:grid;grid-template-columns:repeat(2,1fr)}
+.tabs button{position:relative;height:var(--tab-h);padding:0;background:none;border:0;cursor:pointer;font:600 15px/20px var(--font-sans);color:var(--muted)}
+.tabs button[aria-selected=true]{color:var(--ink)}
+.tabs button[aria-selected=true]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--accent)}
+button:focus-visible,summary:focus-visible,input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.tabs button:focus-visible{outline-offset:-4px}
+.about{position:fixed;left:0;right:0;top:calc(var(--header-h) + var(--tab-h) + 1px);z-index:40;background:var(--bg);max-height:calc(100dvh - var(--header-h) - var(--tab-h) - 1px);overflow:auto;padding:var(--space-4) 0 var(--space-5);border-bottom:1px solid var(--line)}
+.about p{margin:0 0 var(--space-4);font:400 15px/22px var(--font-sans)}
+main{padding-bottom:var(--space-7)}
+main.wrap{padding-bottom:max(var(--space-7),70dvh)}
+
+/* verhaal */
+.lab{font:500 11px/16px var(--font-mono);letter-spacing:.14em;color:var(--muted);margin-bottom:var(--space-2)}
+.lead{margin:0;font:italic 400 22px/32px var(--font-serif)}
+.bridge{margin:0;font:italic 400 18px/28px var(--font-serif)}
+.box{margin:0 0 var(--space-4)}
+p.s{margin:0 0 var(--space-4);font:400 18px/28px var(--font-serif)}
+p.s b{font-weight:600}
+.k{font:400 .9em var(--font-mono)}
+#uitleg>.box{margin-top:var(--space-5)}
+
+/* groepen en bediening */
+.card{margin:0 0 var(--space-5)}
+.card>*+*{margin-top:var(--space-3)}
+.row{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:var(--space-2)}
+.btn{position:relative;min-height:var(--btn-h);padding:0 10px;border:0;border-radius:var(--r);background:var(--surface);color:var(--ink);font:600 15px/20px var(--font-sans);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn::after{content:"";position:absolute;inset:-2px 0}
+.btn.pri{background:var(--accent);color:var(--on-accent)}
+.btn[disabled]{opacity:.45;cursor:default}
+.eq{display:grid;gap:var(--space-2)}
+.eq .btn{width:100%;padding:0 2px}
+.g6{grid-template-columns:repeat(6,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.ro{font:400 14px/20px var(--font-mono);color:var(--muted)}
+.ro b{font-weight:600;color:var(--ink)}
+.ro span{margin-right:var(--space-3);white-space:nowrap}
+.hint{display:block;color:var(--muted);font-size:13px;line-height:18px}
+.small{font-size:13px;line-height:18px;color:var(--muted)}
+.sl{display:flex;align-items:baseline;justify-content:space-between}
+.sl b{font-weight:600}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:var(--btn-h);background:none;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--muted)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;margin-top:-9px;border-radius:50%;background:var(--accent);border:0}
+input[type=range]::-moz-range-track{height:2px;background:var(--muted)}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--accent);border:0}
+.tg{display:flex;align-items:center;justify-content:space-between;min-height:var(--btn-h)}
+.tg{flex-direction:row-reverse;justify-content:flex-end;gap:var(--space-3)}
+.sw{position:relative;flex:none;width:20px;height:20px;border-radius:var(--r);background:var(--surface);border:0;padding:0;cursor:pointer;box-shadow:inset 0 0 0 1.5px var(--muted)}
+.sw::after{content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;border:solid var(--on-accent);border-width:0 2px 2px 0;transform:rotate(45deg);opacity:0}
+.sw[aria-checked=true]{background:var(--accent);box-shadow:none}
+.sw[aria-checked=true]::after{opacity:1}
+.bar{height:4px;background:var(--surface);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent)}
+
+/* kubus */
+.scene{position:relative;width:100%;aspect-ratio:4/3;background:var(--surface);border-radius:var(--r);overflow:hidden;perspective:900px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+#sct{aspect-ratio:16/10}
+
+/* uitklappers */
+details{border-top:1px solid var(--line)}
+.card.flush{margin-bottom:var(--space-5)}
+.card.flush>*+*{margin-top:0}
+.card.flush>details:last-child{border-bottom:1px solid var(--line)}
+summary{list-style:none;display:grid;grid-template-columns:1fr auto;column-gap:var(--space-2);min-height:var(--btn-h);padding:var(--space-3) 0;cursor:pointer}
+summary::-webkit-details-marker{display:none}
+summary b{font-weight:600}
+summary span{grid-column:1;color:var(--muted);font-size:14px;line-height:20px}
+summary svg{grid-column:2;grid-row:1/3;align-self:center;width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.75;transition:transform .2s;flex:none}
+details[open]>summary svg{transform:rotate(180deg)}
+.dc{padding:0 0 var(--space-4);font-size:15px;line-height:22px}
+details.sec:last-of-type{border-bottom:1px solid var(--line)}
+.sec>summary{grid-template-columns:auto 1fr auto;column-gap:var(--space-3);align-items:baseline;padding:var(--space-4) 0}
+.sec>summary>span.n{grid-column:1;grid-row:1;font:500 11px/16px var(--font-mono);letter-spacing:.14em;color:var(--muted)}
+.sec>summary>b{grid-column:2;grid-row:1;font:600 20px/26px var(--font-sans)}
+.sec>summary>span:not(.n){grid-column:2;grid-row:2}
+.sec>summary>svg{grid-column:3;grid-row:1/3}
+h2 .n{font:500 11px/16px var(--font-mono);letter-spacing:.14em;color:var(--muted)}
+.sb{padding-bottom:var(--space-5)}
+.sb>.box:last-child{margin-bottom:0}
+.expall{background:none;border:0;padding:0;width:var(--btn-h);height:var(--btn-h);display:grid;place-items:center;color:var(--muted);cursor:pointer}
+.expall:hover{color:var(--ink)}
+.expall svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.75;transition:transform .2s}
+.expall.up svg{transform:rotate(180deg)}
+@media (prefers-reduced-motion:reduce){.expall svg{transition:none}}
+.exprow{display:flex;justify-content:flex-end;margin:var(--space-3) 0 var(--space-2)}
+
+/* stappen en feedback */
+.steps{display:grid;gap:var(--space-2)}
+.g2c{grid-template-columns:1fr 1fr;column-gap:var(--space-4)}
+.step{display:flex;align-items:baseline;gap:var(--space-3);color:var(--muted)}
+.step.on{color:var(--ink)}
+.step .v{margin-left:auto;font:400 14px/20px var(--font-mono);text-align:right}
+.steps .step b{font:600 15px/22px var(--font-mono);color:var(--ink);min-width:1.2em}
+.total{font:600 15px/22px var(--font-mono);word-break:break-all}
+.fb{display:flex;align-items:center;gap:var(--space-2);font-weight:600;min-height:24px}
+.fb svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;flex:none}
+.fb.ok{color:var(--ok)}.fb.bad{color:var(--bad)}
+.btn.good{background:color-mix(in srgb,var(--ok) 24%,var(--bg));color:var(--ok)}
+.btn.wrong{background:var(--off);color:var(--muted)}
+.score{font:600 28px/32px var(--font-sans)}
+@media (prefers-reduced-motion:reduce){summary svg{transition:none}}
+#oefenen .box{margin-top:var(--space-5)}
+.pscene{aspect-ratio:16/10;margin-top:var(--space-3)}
+
+.scene canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.stp{margin:0 0 var(--space-3);padding-left:1.4em;font-size:15px;line-height:22px}.stp li{margin-bottom:var(--space-2)}
+.demo{margin-top:var(--space-3)}.demo .pscene{margin-top:0;margin-bottom:var(--space-2)}
+.dcap{min-height:48px;margin-top:var(--space-2);font-size:14px;line-height:20px}.dcap b{font-weight:600}.dcap .k{display:block}
+.btn:disabled{opacity:.4;cursor:default}
+.dcap .k{white-space:normal;overflow-wrap:anywhere}
+.ro>span:last-child{white-space:normal}
+.ro.stack span{display:block;margin-right:0}
+.exprow .expall{margin-right:-9px}
+
+.hist{display:flex;align-items:flex-end;gap:2px;height:96px;margin-top:var(--space-3)}
+.hist i{flex:1;background:var(--off);min-height:2px}
+.hist i.on{background:var(--accent)}
+.hax{display:flex;justify-content:space-between;margin-bottom:var(--space-2);color:var(--muted)}
+.eq+p.s,.row+p.s{margin-top:var(--space-4)}
+*{-webkit-tap-highlight-color:transparent}button,summary{touch-action:manipulation}
+
+dialog.dlg{position:fixed;inset:0;margin:auto;width:calc(100% - 2*var(--space-4));max-width:480px;height:fit-content;max-height:calc(100dvh - 2*var(--space-5));overflow:auto;padding:0;border:0;border-radius:var(--r);background:var(--surface);color:var(--ink);animation:sheetup .18s ease-out}
+dialog.dlg::backdrop{background:rgba(0,0,0,.55)}
+@keyframes sheetup{from{opacity:0}}
+.sheet{padding:var(--space-2) var(--space-4) var(--space-4)}
+.sheet p{margin:0 0 var(--space-4);font:400 16px/24px var(--font-sans)}
+.sheeth{display:flex;align-items:center;justify-content:space-between;min-height:var(--btn-h);margin-bottom:var(--space-2)}
+.sheeth .ibtn{margin-right:-8px}
+body:has(dialog[open]){overflow:hidden}
+
+
+
+.dcap{min-height:0}
+.dhist{margin-top:var(--space-2);font:500 14px/20px var(--font-mono)}
+.dhist div{display:flex;gap:var(--space-3);color:var(--muted)}
+.dhist div:last-child{color:var(--ink);font-weight:600}
+.dhist .hn{flex:none;width:2ch;text-align:right}
+.dhist .hk{overflow-wrap:anywhere}
+.tip{margin-top:var(--space-3)}
+.tip>summary{padding:var(--space-3) 0}
+.tipb{padding:0 0 var(--space-2)}
+
+.ph>summary{grid-template-columns:auto 1fr auto;column-gap:var(--space-3);align-items:baseline;padding:var(--space-4) 0}
+.ph>summary>span.n{grid-column:1;grid-row:1;font:500 11px/16px var(--font-mono);letter-spacing:.14em;color:var(--muted);min-width:4.4ch}
+.ph>summary>b{grid-column:2;grid-row:1;font:600 17px/24px var(--font-sans)}
+.ph>summary>span:not(.n){grid-column:2;grid-row:2}
+.ph>summary>svg{grid-column:3;grid-row:1/3}
+.tip{border:0;margin-top:var(--space-2)}
+.tip>summary{display:flex;align-items:center;gap:var(--space-1);min-height:36px;padding:var(--space-2) 0;width:max-content}
+.tip>summary b{font:600 14px/20px var(--font-sans);color:var(--muted)}
+.tip>summary svg{width:16px;height:16px;color:var(--muted)}
+.stp.plain{list-style:none;padding-left:0}
+
+#fb{display:none}
+
+.btn.sel{background:var(--off)}
+html,dialog.dlg{scrollbar-width:none}
+html::-webkit-scrollbar,dialog.dlg::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
+@keyframes glint{50%{background:var(--off)}}
+.btn.glint{animation:glint .4s ease-in-out}
+.ibtn svg.solid{fill:currentColor;stroke:none}
+.vw{display:grid;gap:var(--space-2);grid-template-columns:1fr 1fr}
+.vw button{display:grid;gap:var(--space-1);padding:var(--space-2);border:0;border-radius:var(--r);background:var(--bg);color:var(--ink);font:600 14px/20px var(--font-sans);cursor:pointer;text-align:center}
+.vw button[aria-pressed=true]{background:var(--off)}
+.vw .scene{background:none;pointer-events:none;border-radius:0}
+#qnext{margin-top:var(--space-4)}
+.lk{display:flex;gap:var(--space-5)}
+.lk a{display:inline-flex;align-items:center;min-height:var(--btn-h);color:var(--ink);font-weight:600;text-underline-offset:3px}
+
+.scene+.row{margin-top:var(--space-2)}
+
+.expall.sub svg{width:16px;height:16px}
+.exprow .expall.sub{margin-right:-12px}
+.ph>summary>svg{width:16px;height:16px}
+</style></head><body>
+<header>
+  <div class="wrap">
+    <h1 class="title">Het raadsel van de kubus</h1>
+    <button class="ibtn" id="gear" aria-label="Instellingen" aria-haspopup="dialog"><svg class="solid" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button>
+    <button class="ibtn" id="info" aria-label="Info" aria-haspopup="dialog"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="1.1" fill="currentColor" stroke="none"/></svg></button>
+    <button class="ibtn" id="lang" aria-label="Switch to English">EN</button>
+    <button class="ibtn" id="theme" aria-label="Donker of licht"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
+  </div>
+</header>
+<div class="tabbar"><div class="tabs" role="tablist">
+  <button role="tab" id="tab-uitleg" aria-selected="true" aria-controls="uitleg">Uitleg</button>
+  <button role="tab" id="tab-oefenen" aria-selected="false" aria-controls="oefenen">Oefenen</button>
+</div></div>
+
+<dialog class="dlg" id="about"><div class="sheet"><div class="sheeth"><div class="lab" style="margin:0">OVER DEZE PAGINA</div><button class="ibtn" id="about-x" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><p>Uitleg en oefening over de kubus van Rubik. Eerst doen, dan begrijpen, dan oefenen.</p>
+  <p>De taalknop wisselt tussen Nederlands en Engels, de halve cirkel tussen donker en licht.</p>
+  <div class="lab">VALSSPELEN</div>
+  <p>We spelen hier een beetje vals. Bij "Nooit meer dan 20 zetten van huis?" en bij de voorbeelden in de fasen rekent de pagina niets uit.</p>
+  <p>Een computer heeft de oplossingen vooraf gezocht en ze staan vast in de pagina. Elke hussel is zo'n oplossing achterstevoren: de pagina speelt hem af als hussel en daarna vooruit als oplossing.</p>
+  <p>Waarom? Een echte oplosser heeft grote voorberekende tabellen en rekentijd nodig. Dat past niet in één lichte pagina op een telefoon. De uitkomst is wel echt: elke getoonde oplossing is gecontroleerd en kost hooguit 20 zetten.</p>
+  <div class="lab">BEDENKER</div>
+  <p>De kubus is in 1974 bedacht door de Hongaarse architect Ernő Rubik.</p>
+  <div class="lk"><a href="https://nl.wikipedia.org/wiki/Ern%C5%91_Rubik" target="_blank" rel="noopener">Wikipedia NL</a><a href="https://en.wikipedia.org/wiki/Ern%C5%91_Rubik" target="_blank" rel="noopener">Wikipedia EN</a></div>
+</div></dialog>
+
+<main class="wrap">
+<dialog class="dlg" id="set"><div class="sheet"><div class="sheeth"><div class="lab" style="margin:0">INSTELLINGEN</div><button class="ibtn" id="set-x" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="lab">BEGINSTAND KUBUS</div>
+  <div class="vw" id="views"></div>
+  <div class="lab" style="margin-top:var(--space-5)">LETTERS</div>
+  <div class="tg" style="margin:0"><span>Standaard tonen</span><button class="sw" role="checkbox" aria-checked="true" id="lettersD" aria-label="Letters standaard tonen"></button></div></div></dialog>
+<div id="uitleg" role="tabpanel" aria-labelledby="tab-uitleg">
+  <div class="box" style="margin-top:var(--space-5)">
+      <p class="lead">Elke stand van de kubus is in hoogstens 20 draaien op te lossen. Toch kost het de meeste mensen uren of maanden. Hoe kan dat?</p></div>
+  <div class="exprow"><button class="expall" id="expall" aria-label="Alles uitklappen"><svg viewBox="0 0 24 24"><path d="M6 6l6 6 6-6M6 13l6 6 6-6"/></svg></button></div>
+
+  <details class="sec" id="s0" open>
+    <summary><span class="n">00</span><b>Probeer het zelf</b><span>draai een laag</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="sb">
+    <div class="intro card">
+      <div class="scene" id="sc0"></div>
+      <div class="row"><button class="btn pri" id="turn">Draai een laag</button><button class="btn" id="reset0">Herstel</button></div>
+      <div class="ro"><span><b id="n0">0</b> <span id="n0l">zetten gedaan</span></span></div>
+      <span class="hint"></span>
+    </div>
+    <p class="s">Vraag het aan Ernő Rubik. Hij bouwde de kubus in 1974 in Boedapest, om zijn studenten ruimtelijk te leren denken. Zijn eigen husseling weer oplossen duurde ongeveer een maand, vertelt hij. Draai zelf een paar keer en voel hoe snel je de weg kwijt bent.</p>
+  </div></details>
+
+  <details class="sec" id="s1">
+    <summary><span class="n">01</span><b>Wat draait er eigenlijk?</b><span>26 stukken</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="sb">
+    <p class="s">Je telt 27 blokjes, maar het middelste ontbreekt: daar zit alleen de as die alles bij elkaar houdt. Er draaien dus 26 stukken. Kies hieronder een soort en zie waar ze zitten.</p>
+    <div class="card">
+      <div class="eq g3" id="hl-chips" style="grid-template-columns:repeat(4,1fr)"></div>
+      <div class="scene" id="sc1"></div>
+      <div class="ro" id="hl-ro"></div>
+    </div>
+    <p class="s">De middens zitten vast aan de as en bepalen de kleur van hun zijde: wit tegenover geel, rood tegenover oranje, blauw tegenover groen. Alleen hoeken en randen verhuizen.</p>
+    <div class="box"><p class="bridge">Nu je weet wat er draait, kun je opschrijven wat je doet. Dat kost maar zes letters.</p></div>
+  </div></details>
+
+  <details class="sec" id="s2">
+    <summary><span class="n">02</span><b>Hoe schrijf je een draai op?</b><span>zes letters, 18 zetten</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="sb">
+    <p class="s">Elke zijde heeft een letter: de beginletter van het Engelse woord. Een letter hoort bij een plek, niet bij een kleur: U is de zijde die boven zit. Een losse letter is een kwartslag met de klok mee, gezien vanaf die zijde.</p>
+    <div class="card"><div class="steps g2c" id="legend2"></div></div>
+    <div class="eq g2" id="tabs2"></div>
+    <p class="s" id="t2txt"></p>
+    <div class="card">
+      <div id="pad2"></div>
+      <div class="scene" id="sc2"></div>
+      <div class="tg"><span>Letters op de kubus</span><button class="sw" role="checkbox" aria-checked="false" id="letters2" aria-label="Letters op de kubus"></button></div>
+      <div class="ro" id="ro2a"><span><span>laatste zet</span> <b id="last2">–</b></span><span id="mean2" style="white-space:normal"></span></div>
+      <div class="ro stack" id="ro2b"><span><span>jouw reeks</span> <b id="seq2b">–</b></span><span><span>tegenzet</span> <b id="inv2b">–</b></span></div>
+      <div class="row"><button class="btn" id="reset2">Herstel</button></div>
+    </div>
+    <div class="card flush">
+      <details>
+        <summary><b>Hoort een letter bij een kleur?</b><span>letters en zijden</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="dc">Nee, bij een plek. U is de zijde die boven zit, F de zijde die naar je toe wijst, R de zijde rechts, en zo verder. Draai je de kubus in je handen om, dan zit er een andere kleur boven en die zijde heet dan U. Wij houden de kubus steeds met wit boven en groen voor: daarom is U hier de witte zijde en F de groene. Op het scherm draait alleen de camera mee, dus de letters blijven op dezelfde zijden. Zet de letters aan en draai de kubus om het te zien.</div>
+      </details>
+    </div>
+    <div class="box"><p class="bridge">Met 18 zetten bouw je al snel iets enorms. Hoe groot precies?</p></div>
+  </div></details>
+
+  <details class="sec" id="s3">
+    <summary><span class="n">03</span><b>Hoeveel standen zijn er?</b><span>43 triljoen</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="sb">
+    <p class="s">Een stand van de kubus bestaat uit vier dingen: waar de hoeken zitten, hoe ze gedraaid zijn, waar de randen zitten en hoe ze omgeklapt zijn. Voeg ze één voor één toe en vermenigvuldig mee.</p>
+    <div class="card">
+      <div class="row"><button class="btn pri" id="step">Voeg toe</button><button class="btn" id="reset3">Herstel</button></div>
+      <div class="steps" id="steps"></div>
+      <div class="tg"><span>Wetenschappelijke notatie</span><button class="sw" role="checkbox" aria-checked="false" id="sci" aria-label="Wetenschappelijke notatie"></button></div>
+      <div class="lab" style="margin-bottom:0">TOTAAL</div>
+      <div class="total" id="total">–</div>
+    </div>
+    <div class="card flush">
+      <details><summary><b>Waarom 3<sup>7</sup> en niet 3<sup>8</sup>?</b><span>hoeken draaien</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="dc">Alle draaiingen van de hoeken samen tellen altijd op tot een heel aantal slagen. Liggen zeven hoeken vast, dan ligt de achtste ook vast. Dat scheelt een factor 3.</div></details>
+      <details><summary><b>Waarom 2<sup>11</sup> en niet 2<sup>12</sup>?</b><span>randen omklappen</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="dc">Zelfde idee: het aantal omgeklapte randen is altijd even. Zodra elf randen vastliggen, ligt de twaalfde ook vast.</div></details>
+      <details><summary><b>Waarom maar de helft van 12!?</b><span>randen verwisselen</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="dc">Je kunt nooit alleen twee randen van plaats wisselen en de rest laten staan. Hoeken en randen verwisselen altijd samen, zodat de helft van alle rangschikkingen onbereikbaar blijft.</div></details>
+    </div>
+    <p class="s">Dat zijn ruim 43 triljoen standen. Probeer je er elke seconde één, dan ben je ongeveer 1,4 biljoen jaar bezig. Dat is bijna honderd keer de leeftijd van het heelal.</p>
+    <div class="box"><p class="bridge">Zoveel standen, en toch hoef je maar een paar zetten te maken om thuis te komen. Hoeveel dan?</p></div>
+  </div></details>
+
+  <details class="sec" id="s4">
+    <summary><span class="n">04</span><b>Nooit meer dan 20 zetten van huis?</b><span>het getal van God</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="sb">
+    <p class="s">Wat is het minste aantal zetten waarmee de allerbeste oplosser elke kubus thuis krijgt? Dat is het getal van God. Een zet is één draai van een laag: een kwart, een halve of driekwart slag telt voor één.</p>
+    <div class="card">
+      <div class="sl"><b>Hooguit zoveel zetten</b><span class="ro"><b id="nv">18</b></span></div>
+      <input type="range" id="nr" min="0" max="20" value="18" aria-label="Aantal zetten">
+      <div class="hist" id="hist"></div>
+      <div class="hax small"><span>0</span><span>10</span><span>20 zetten</span></div>
+      <div class="ro"><span id="n4a" style="white-space:normal"></span></div>
+      <div class="ro"><span id="n4b" style="white-space:normal"></span></div>
+    </div>
+    <p class="s">Een computer rekende dit uit: in 2010 liet een team alle 43 triljoen standen doorrekenen, ongeveer 35 jaar rekentijd verdeeld over gewone computers. Geen enkele stand bleek er meer dan 20 nodig te hebben. De meeste hebben er 18 nodig. Echt 20 is zo zeldzaam dat het één op de 90 miljard standen is.</p>
+    <p class="s">Zie het zelf. Hieronder staat een gehusselde kubus. Een computer lost hem op in hooguit 20 zetten.</p>
+    <div class="card"><div class="demo" style="margin:0"><div class="scene pscene" id="sc4"></div><div class="eq" style="grid-template-columns:1fr;gap:var(--space-2)" id="g4b"></div><div class="dcap"><b id="g4c"></b><div class="dhist" id="g4h"></div></div></div></div>
+    <p class="s">Jij komt hieronder op meer dan 20 zetten uit. Dat klopt: het getal van God is de kortste route die er bestaat, en alleen een computer met enorme tabellen kent die voor elke kubus. Een methode die je kunt onthouden gebruikt vaste reeksen en kost daarom meer zetten, in het voorbeeld hieronder zo'n honderd. Een bekende beginnersmethode heeft in het slechtste geval zelfs 205 zetten nodig.</p>
+    <div class="box"><p class="bridge">Genoeg theorie. Hoe pak je hem zelf aan?</p></div>
+  </div></details>
+
+  <details class="sec" id="s5">
+    <summary><span class="n">05</span><b>Hoe los je hem laag voor laag op?</b><span>zeven fasen</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="sb">
+    <p class="s">De bekendste aanpak voor beginners bouwt de kubus van onder naar boven op, in zeven fasen. Wit blijft de hele tijd boven en geel is de onderkant: de eerste laag bouw je dus onderaan. Hieronder speel je de zet <span class="k">R U R' U'</span> uit fase 2 af. Na zes keer is de kubus weer precies zoals hij was.</p>
+    <div class="card">
+      <div class="scene" id="sc5"></div>
+      <div class="row"><button class="btn pri" id="play1">Speel af</button><button class="btn" id="play6">Speel 6 keer</button><button class="btn ter" id="reset5">Herstel</button></div>
+      <div class="ro"><span>reeks <b class="k" style="font-family:var(--font-mono)">R U R' U'</b></span><span><span>keer</span> <b id="n5">0</b></span></div>
+    </div>
+    
+    <p class="s">Zo maak je niets stuk. Een reeks is een pakket: maak hem altijd helemaal af, want halverwege staat het werk van eerder even los. Klopt er na afloop iets niet meer, draai de reeks dan terug: in omgekeerde volgorde, elke zet omgekeerd (R U wordt U' R'). De letters in de uitleg gelden voor een plek rechts voor. Zit je plek elders, draai dan de hele kubus een kwartslag, of schuif de letters F, R, B, L één plek door.</p>
+    <div class="exprow" style="justify-content:space-between;align-items:center"><div class="lab" style="margin:0">FASEN</div><button class="expall sub" id="expph" aria-label="Alles uitklappen"><svg viewBox="0 0 24 24"><path d="M6 6l6 6 6-6M6 13l6 6 6-6"/></svg></button></div>
+    <div class="card flush" id="phases"></div>
+    <div class="box">
+      <p class="bridge">Er zijn 43 triljoen standen en elke stand heeft een korte weg terug. Het moeilijke is die weg vinden. Een methode laag voor laag geeft je een weg die je kunt onthouden, ook al duurt hij langer dan 20 zetten. Nu jij.</p>
+      <div class="row" style="margin-top:var(--space-3)"><button class="btn pri" id="to-train">Naar Oefenen</button></div></div>
+  </div></details>
+
+  <details class="sec" id="s6">
+    <summary><span class="n">06</span><b>Hoe vindt een computer de kortste weg?</b><span>extra: twee trucs</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="sb">
+    <p class="s">Een computer zoekt de kortste oplossing door standen af te gaan. Hier zie je dat echt gebeuren op een 2×2×2, met en zonder twee trucs. Daarna zie je hoe de 3×3×3 hetzelfde doet.</p>
+    <div class="exprow" style="justify-content:space-between;align-items:center"><div class="lab" style="margin:0">ONDERDELEN</div><button class="expall sub" id="expx" aria-label="Alles uitklappen"><svg viewBox="0 0 24 24"><path d="M6 6l6 6 6-6M6 13l6 6 6-6"/></svg></button></div>
+    <div class="card flush" id="xparts">
+      <details class="ph"><summary><span class="n">06.1</span><b id="xh1"></b><span id="xs1"></span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary><div class="dc"><p class="small" id="xp0"></p><div id="xsteps"></div></div></details>
+      <details class="ph"><summary><span class="n">06.2</span><b id="xh2"></b><span id="xs2"></span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary><div class="dc"><p class="small">Hussel, en kies hoe de computer zoekt. Hij telt hoeveel standen hij moet bekijken.</p>
+      <div class="card" style="margin-bottom:var(--space-3)">
+        <div class="row"><button class="btn pri" id="xhus"></button></div>
+        <div class="ro" id="xsc">–</div>
+        <div class="row"><button class="btn" id="xone"></button><button class="btn" id="xtwo"></button></div>
+        <div class="ro stack" id="xr1"></div>
+      </div>
+      <p class="small">Eén kant: vanaf de hussel alle draaien proberen, dan alle draaien daarvan, tot je de opgeloste stand tegenkomt. Twee kanten: je zoekt ook vanaf de opgeloste stand en stopt zodra de twee zoekgebieden elkaar raken. Elk gebied hoeft maar half zo diep.</p></div></details>
+      <details class="ph"><summary><span class="n">06.3</span><b id="xh3"></b><span id="xs3"></span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary><div class="dc"><p class="small">Een tabel onthoudt van de standen vlak bij opgelost hoeveel zetten ze minstens nodig hebben. Een reeks die al te lang is, valt meteen af. Zoek dezelfde hussel zonder en met tabel.</p>
+      <div class="card" style="margin-bottom:var(--space-3)">
+        <div class="row"><button class="btn" id="xnotab"></button><button class="btn" id="xtab"></button></div>
+        <div class="ro stack" id="xr2"></div>
+      </div>
+      <p class="small" id="xtabinfo"></p></div></details>
+      <details class="ph"><summary><span class="n">06.4</span><b id="xh4"></b><span id="xs4"></span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary><div class="dc"><p class="small">De grote kubus heeft te veel standen voor één zoektocht. Een oplosser knipt het werk in twee fasen en gebruikt in elke fase een tabel.</p>
+      <div class="card" id="xbig" style="margin-bottom:var(--space-3)"></div>
+      <p class="small">Fase 1 brengt de kubus in een kleine familie van standen, in hooguit 12 zetten. Fase 2 lost hem daarbinnen op, in hooguit 18. Zo vindt de oplosser snel een oplossing van ongeveer 20 zetten en zoekt hij daarna door naar een kortere. Zo zijn de oplossingen op deze pagina gemaakt.</p></div></details>
+    </div>
+    <div class="box"><p class="bridge">Een computer vindt de kortste weg door slim te zoeken, niet door alles te proberen. Een mens onthoudt liever een methode, ook al kost die meer zetten. Daarom speelt deze pagina de korte routes af die een computer vooraf heeft gezocht.</p></div>
+  </div></details>
+</div>
+
+<div id="oefenen" role="tabpanel" aria-labelledby="tab-oefenen" class="hidden">
+  <section id="t0">
+    <div class="box">
+      <p class="lead">Wat blijft er hangen? Een korte ronde vertelt het.</p></div>
+    <div class="intro card" id="setup">
+      <div class="lab" style="margin:0 0 var(--space-2)">SPEL</div>
+      <div class="eq g2" id="game-chips"></div>
+      <div class="small" id="game-hint"></div>
+      <div class="lab" style="margin:var(--space-5) 0 var(--space-2)">RONDES</div>
+      <div class="eq g2" id="round-chips"></div>
+      <div class="row" style="margin-top:var(--space-5)"><button class="btn pri" id="start">Start</button></div>
+    </div>
+    <div class="intro card hidden" id="play">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-3)"><div class="ro" id="status"></div><div class="tg" style="margin:0;flex:none;min-height:24px"><span>Letters</span><button class="sw" role="checkbox" aria-checked="false" id="lettersT" aria-label="Letters op de kubus"></button></div></div>
+      <div class="scene" id="sct"></div>
+      <div id="qtext" style="font:400 18px/28px var(--font-serif)"></div>
+      <div id="qbody"></div>
+      <div class="fb" id="fb" aria-live="polite"></div>
+      <div class="row" id="qnext"></div>
+      <div class="row"><button class="btn ter" id="stop">Stop</button></div>
+    </div>
+    <div class="intro card hidden" id="result">
+      <div class="lab" style="margin-bottom:0">SCORE</div>
+      <div class="score" id="score"></div>
+      <div id="rtext" style="font:400 18px/28px var(--font-serif)"></div>
+      <div class="row"><button class="btn pri" id="again">Nog een spel</button></div>
+    </div>
+  </section>
+</div>
+</main>
+
+<script>
+/* ===== Engine: pure cube logic (right-handed: X rechts, Y omhoog, Z naar de kijker) ===== */
+const P=[1,-1,1];
+const I3=()=>[[1,0,0],[0,1,0],[0,0,1]];
+const mm=(a,b)=>a.map(r=>[0,1,2].map(j=>r[0]*b[0][j]+r[1]*b[1][j]+r[2]*b[2][j]));
+const mv=(a,v)=>a.map(r=>r[0]*v[0]+r[1]*v[1]+r[2]*v[2]);
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+function rot(n,phi){const c=Math.cos(phi),s=Math.sin(phi),t=1-c,x=n[0],y=n[1],z=n[2];
+  return [[t*x*x+c,t*x*y-s*z,t*x*z+s*y],[t*x*y+s*z,t*y*y+c,t*y*z-s*x],[t*x*z-s*y,t*y*z+s*x,t*z*z+c]];}
+const rnd=m=>m.map(r=>r.map(v=>Math.round(v)+0));
+const FACE={U:[0,1,0],D:[0,-1,0],L:[-1,0,0],R:[1,0,0],F:[0,0,1],B:[0,0,-1]};
+const COL={'1,0,0':'red','-1,0,0':'orange','0,1,0':'white','0,-1,0':'yellow','0,0,1':'green','0,0,-1':'blue'};
+function parse(tok){const m=tok.slice(1);
+  return {n:FACE[tok[0]],phi:m==="'"?Math.PI/2:m==='2'?Math.PI:-Math.PI/2};}
+function newCubies(pal){const a=[];const P2=pal||COL;
+  for(let x=-1;x<=1;x++)for(let y=-1;y<=1;y++)for(let z=-1;z<=1;z++){
+    if(!x&&!y&&!z)continue;
+    const home=[x,y,z],st=[];
+    for(const k in COL){const d=k.split(',').map(Number);if(dot(d,home)===1)st.push({d:d,c:P2[k]});}
+    a.push({p:home.slice(),M:I3(),home:home,st:st,t:home.filter(Math.abs).length});
+  }
+  return a;}
+const _MC={};
+function applyMove(cs,tok){const q=parse(tok),R=_MC[tok]||(_MC[tok]=rnd(rot(q.n,q.phi)));
+  for(const c of cs){if(dot(c.p,q.n)===1){c.p=mv(R,c.p);c.M=mm(R,c.M);}}}
+function isSolved(cs){const m={};
+  for(const c of cs)for(const s of c.st){const w=mv(c.M,s.d).join(',');(m[w]=m[w]||new Set()).add(s.c);}
+  return Object.values(m).every(s=>s.size===1);}
+const inv=t=>t[0]+(t.length>1?(t[1]==="'"?'':t[1]):"'");
+const invSeq=a=>a.slice().reverse().map(inv);
+
+/* ===== App ===== */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+let LANG='nl';try{LANG=localStorage.getItem('lang')==='en'?'en':'nl';}catch(e){}
+const L=(nl,en)=>LANG==='en'?en:nl;
+/* vaste tekst: Nederlandse innerHTML als sleutel */
+const EN={
+'Het raadsel van de kubus':'The riddle of the cube','SPEL':'GAME','RONDES':'ROUNDS','SCORE':'SCORE','TOTAAL':'TOTAL',
+'Uitleg':'Explain','Oefenen':'Practice','Draai een laag':'Turn a layer','Herstel':'Reset','Stap +1':'Step +1','Speel af':'Play','Speel 6 keer':'Play 6 times','Naar Oefenen':'Go to Practice','Start':'Start','Nog een spel':'Another game',
+'Elke stand van de kubus is in hoogstens 20 draaien op te lossen. Toch kost het de meeste mensen uren of maanden. Hoe kan dat?':'Every position of the cube can be solved in at most 20 turns. Yet most people need hours or months. How come?',
+'Zo maak je niets stuk. Een reeks is een pakket: maak hem altijd helemaal af, want halverwege staat het werk van eerder even los. Klopt er na afloop iets niet meer, draai de reeks dan terug: in omgekeerde volgorde, elke zet omgekeerd (R U wordt U\' R\'). De letters in de uitleg gelden voor een plek rechts voor. Zit je plek elders, draai dan de hele kubus een kwartslag, of schuif de letters F, R, B, L één plek door.':'Keep your work safe. A sequence is a package: always finish it, because halfway your earlier work is briefly loose. Something not right afterwards? Undo the sequence: in reverse order, each move reversed (R U becomes U\' R\'). The letters in the text are for a place at the front right. Is your place elsewhere, turn the whole cube a quarter turn, or shift the letters F, R, B, L one step.',
+'zetten gedaan':'moves made','6 zijden × 3 draaien = <b>18</b> mogelijke zetten':'6 faces × 3 turns = <b>18</b> possible moves',
+'Vraag het aan Ernő Rubik. Hij bouwde de kubus in 1974 in Boedapest, om zijn studenten ruimtelijk te leren denken. Zijn eigen husseling weer oplossen duurde ongeveer een maand, vertelt hij. Draai zelf een paar keer en voel hoe snel je de weg kwijt bent.':'Ask Ernő Rubik. He built the cube in 1974 in Budapest to teach his students to think spatially. Solving his own scramble took about a month, he says. Turn it a few times yourself and feel how quickly you lose your way.',
+'Je telt 27 blokjes, maar het middelste ontbreekt: daar zit alleen de as die alles bij elkaar houdt. Er draaien dus 26 stukken. Kies hieronder een soort en zie waar ze zitten.':'You count 27 little blocks, but the middle one is missing: there is only the axis that holds everything together. So 26 pieces turn. Pick a kind below to see where they sit.',
+'De middens zitten vast aan de as en bepalen de kleur van hun zijde: wit tegenover geel, rood tegenover oranje, blauw tegenover groen. Alleen hoeken en randen verhuizen.':'The centres are fixed to the axis and decide the colour of their side: white opposite yellow, red opposite orange, blue opposite green. Only corners and edges move around.',
+'Nu je weet wat er draait, kun je opschrijven wat je doet. Dat kost maar zes letters.':'Now that you know what turns, you can write down what you do. It takes only six letters.',
+'Elke zijde heeft een letter: de beginletter van het Engelse woord. Een letter hoort bij een plek, niet bij een kleur: U is de zijde die boven zit. Een losse letter is een kwartslag met de klok mee, gezien vanaf die zijde.':'Every side has a letter: the first letter of its English word. A letter belongs to a place, not to a colour: U is the side that is on top. A single letter is a quarter turn clockwise, seen from that side.',
+'Kies hieronder eerst hoe je draait (Kwart, Terug of Half) en druk dan op een letter. Met de schakelaar zie je de letters op de kubus.':'Below, first pick how you turn (Quarter, Reverse or Half), then press a letter. The switch shows the letters on the cube.',
+'Letters op de kubus':'Letters on the cube','Letters':'Letters','Elke zet heeft een tegenzet: R en R\' heffen elkaar op. Wil je een hele reeks terugdraaien, neem dan de zetten in omgekeerde volgorde en draai bij elke zet de richting om. Een 2 blijft een 2. Draai hieronder een paar zetten en draai ze dan in omgekeerde volgorde terug.':'Every move has an undo: R and R\' cancel each other. To undo a whole sequence, take the moves in reverse order and flip the direction of each one. A 2 stays a 2. Below, make a few moves, then undo them in reverse order.','Hooguit zoveel zetten':'At most this many moves','kubussen op te lossen':'cubes solvable','precies zoveel nodig':'needing exactly this many','20 zetten':'20 moves','Voeg toe':'Add','Wat is het minste aantal zetten waarmee de allerbeste oplosser elke kubus thuis krijgt? Dat is het getal van God. Een zet is één draai van een laag: een kwart, een halve of driekwart slag telt voor één.':'What is the fewest moves with which the very best solver gets any cube home? That is God\'s number. A move is one turn of a layer: a quarter, half or three-quarter turn counts as one.','Een computer rekende dit uit: in 2010 liet een team alle 43 triljoen standen doorrekenen, ongeveer 35 jaar rekentijd verdeeld over gewone computers. Geen enkele stand bleek er meer dan 20 nodig te hebben. De meeste hebben er 18 nodig. Echt 20 is zo zeldzaam dat het één op de 90 miljard standen is.':'A computer worked this out: in 2010 a team had all 43 quintillion positions checked, about 35 years of computing time spread over ordinary computers. No position turned out to need more than 20. Most need 18. A true 20 is so rare that it is one in 90 billion positions.','Jij komt hieronder op meer dan 20 zetten uit. Dat klopt: het getal van God is de kortste route die er bestaat, en alleen een computer met enorme tabellen kent die voor elke kubus. Een methode die je kunt onthouden gebruikt vaste reeksen en kost daarom meer zetten, in het voorbeeld hieronder zo\'n honderd. Een bekende beginnersmethode heeft in het slechtste geval zelfs 205 zetten nodig.':'Below you end up with more than 20 moves. That is right: God\'s number is the shortest route that exists, and only a computer with huge tables knows it for every cube. A method you can remember uses fixed sequences and so costs more moves, about a hundred in the example below. A well-known beginner\'s method needs as many as 205 moves in the worst case.','Een stand van de kubus bestaat uit vier dingen: waar de hoeken zitten, hoe ze gedraaid zijn, waar de randen zitten en hoe ze omgeklapt zijn. Voeg ze één voor één toe en vermenigvuldig mee.':'A position of the cube consists of four things: where the corners are, how they are twisted, where the edges are and how they are flipped. Add them one at a time and multiply along.','0':'0','10':'10','laatste zet':'last move','jouw reeks':'your sequence','tegenzet':'undo',
+"Een ' draait de andere kant op en een 2 is een halve slag. Zes zijden, drie soorten draai: dat zijn 18 zetten.":"A ' turns the other way and a 2 is a half turn. Six sides, three kinds of turn: that makes 18 moves.",
+'Hoort een letter bij een kleur?':'Does a letter belong to a colour?','letters en zijden':'letters and sides',
+'Nee, bij een plek. U is de zijde die boven zit, F de zijde die naar je toe wijst, R de zijde rechts, en zo verder. Draai je de kubus in je handen om, dan zit er een andere kleur boven en die zijde heet dan U. Wij houden de kubus steeds met wit boven en groen voor: daarom is U hier de witte zijde en F de groene. Op het scherm draait alleen de camera mee, dus de letters blijven op dezelfde zijden. Zet de letters aan en draai de kubus om het te zien.':'No, to a place. U is the side that is on top, F the side facing you, R the side on the right, and so on. Turn the cube over in your hands and a different colour is on top, and that side is then called U. We always hold the cube with white on top and green in front: that is why U is the white side here and F the green one. On screen only the camera turns, so the letters stay on the same sides. Switch the letters on and rotate the cube to see it.',
+'Elke zet heeft een tegenzet':'Every move has an undo','ongedaan maken':'undoing',
+'R en R\' heffen elkaar op. Wil je een hele reeks terugdraaien, neem dan de zetten in omgekeerde volgorde en draai bij elke zet de richting om. De tegenzet van <span class="k">R U F\'</span> is <span class="k">F U\' R\'</span>. Een 2 blijft een 2.':'R and R\' cancel each other. To undo a whole sequence, take the moves in reverse order and flip the direction of each one. The undo of <span class="k">R U F\'</span> is <span class="k">F U\' R\'</span>. A 2 stays a 2.',
+'Met 18 zetten bouw je al snel iets enorms. Hoe groot precies?':'With 18 moves you quickly build something huge. How huge exactly?',
+'Tel mee. Elke stap voegt toe wat de kubus kan hebben, en het totaal groeit met elke stap.':'Count along. Each step adds something the cube can have, and the total grows with every step.',
+'Wetenschappelijke notatie':'Scientific notation',
+'Waarom 3<sup>7</sup> en niet 3<sup>8</sup>?':'Why 3<sup>7</sup> and not 3<sup>8</sup>?','hoeken draaien':'twisting corners',
+'Alle draaiingen van de hoeken samen tellen altijd op tot een heel aantal slagen. Liggen zeven hoeken vast, dan ligt de achtste ook vast. Dat scheelt een factor 3.':'All corner twists together always add up to a whole number of turns. If seven corners are fixed, the eighth is fixed too. That saves a factor 3.',
+'Waarom 2<sup>11</sup> en niet 2<sup>12</sup>?':'Why 2<sup>11</sup> and not 2<sup>12</sup>?','randen omklappen':'flipping edges',
+'Zelfde idee: het aantal omgeklapte randen is altijd even. Zodra elf randen vastliggen, ligt de twaalfde ook vast.':'Same idea: the number of flipped edges is always even. Once eleven edges are fixed, the twelfth is fixed too.',
+'Waarom maar de helft van 12!?':'Why only half of 12!?','randen verwisselen':'swapping edges',
+'Je kunt nooit alleen twee randen van plaats wisselen en de rest laten staan. Hoeken en randen verwisselen altijd samen, zodat de helft van alle rangschikkingen onbereikbaar blijft.':'You can never swap just two edges and leave the rest. Corners and edges always swap together, so half of all arrangements stay out of reach.',
+'Dat zijn ruim 43 triljoen standen. Probeer je er elke seconde één, dan ben je ongeveer 1,4 biljoen jaar bezig. Dat is bijna honderd keer de leeftijd van het heelal.':'That is over 43 quintillion positions. Try one every second and you need about 1.4 trillion years. That is almost a hundred times the age of the universe.',
+'Zoveel standen, en toch hoef je maar een paar zetten te maken om thuis te komen. Hoeveel dan?':'So many positions, and yet you only need a few moves to get home. How many?',
+'Een reeks is een rij zetten, zoals <span class="k">R U F\'</span>. Schuif en zie hoeveel verschillende reeksen van n zetten er bestaan. Zodra het er meer zijn dan standen, is er in principe genoeg.':'A sequence is a row of moves, like <span class="k">R U F\'</span>. Slide and see how many different sequences of n moves exist. Once there are more than positions, there is room in principle.',
+'Aantal zetten':'Number of moves','Elke zet kiest uit 18 mogelijkheden.':'Each move picks from 18 options.','reeksen':'sequences','standen':'positions',
+'Veel reeksen eindigen in dezelfde stand, dus de echte grens ligt hoger dan 16. In 2010 bewezen onderzoekers met veel rekenwerk dat 20 zetten altijd genoeg zijn. Dat heet het getal van God.':'Many sequences end in the same position, so the true limit lies above 16. In 2010 researchers proved with a lot of computing that 20 moves are always enough. That is called God\'s number.',
+'Genoeg theorie. Hoe pak je hem zelf aan?':'Enough theory. How do you tackle it yourself?',
+'De bekendste aanpak voor beginners bouwt de kubus van onder naar boven op, in zeven fasen. Wit blijft de hele tijd boven en geel is de onderkant: de eerste laag bouw je dus onderaan. Hieronder speel je de zet <span class="k">R U R\' U\'</span> uit fase 2 af. Na zes keer is de kubus weer precies zoals hij was.':'The best-known beginner method builds the cube from bottom to top, in seven phases. White stays on top the whole time and yellow is the bottom: you build the first layer at the bottom. Below you can play the move <span class="k">R U R\' U\'</span> from phase 2. After six times the cube is exactly as it was.',
+'reeks <b class="k" style="font-family:var(--font-mono)">R U R\' U\'</b>':'sequence <b class="k" style="font-family:var(--font-mono)">R U R\' U\'</b>','keer':'times',
+'Er zijn 43 triljoen standen en elke stand heeft een korte weg terug. Het moeilijke is die weg vinden. Een methode laag voor laag geeft je een weg die je kunt onthouden, ook al duurt hij langer dan 20 zetten. Nu jij.':'There are 43 quintillion positions and every position has a short way back. The hard part is finding that way. A layer-by-layer method gives you a way you can remember, even if it takes longer than 20 moves. Your turn.',
+'Probeer het zelf':'Try it yourself','draai een laag':'turn a layer','Wat draait er eigenlijk?':'What actually turns?','26 stukken':'26 pieces','Hoe schrijf je een draai op?':'How do you write down a turn?','zes letters, 18 zetten':'six letters, 18 moves','Hoeveel standen zijn er?':'How many positions are there?','43 triljoen':'43 quintillion','Nooit meer dan 20 zetten van huis?':'Never more than 20 moves from home?','het getal van God':'the number of God','Hoe los je hem laag voor laag op?':'How do you solve it layer by layer?','zeven fasen':'seven phases','FASEN':'PHASES',
+'Zie het zelf. Hieronder staat een gehusselde kubus. Een computer lost hem op in hooguit 20 zetten.':'See for yourself. Below is a shuffled cube. A computer solves it in at most 20 moves.','OVER DEZE PAGINA':'ABOUT THIS PAGE','VALSSPELEN':'CHEATING','We spelen hier een beetje vals. Bij "Nooit meer dan 20 zetten van huis?" en bij de voorbeelden in de fasen rekent de pagina niets uit.':'We cheat a little here. For "Never more than 20 moves from home?" and for the examples in the phases, the page calculates nothing.','Een computer heeft de oplossingen vooraf gezocht en ze staan vast in de pagina. Elke hussel is zo\'n oplossing achterstevoren: de pagina speelt hem af als hussel en daarna vooruit als oplossing.':'A computer searched the solutions beforehand and they are fixed in the page. Each shuffle is such a solution backwards: the page plays it as the shuffle and then forwards as the solution.','Waarom? Een echte oplosser heeft grote voorberekende tabellen en rekentijd nodig. Dat past niet in één lichte pagina op een telefoon. De uitkomst is wel echt: elke getoonde oplossing is gecontroleerd en kost hooguit 20 zetten.':'Why? A real solver needs large precomputed tables and computing time. That does not fit in one light page on a phone. The result is real, though: every solution shown is checked and takes at most 20 moves.','Een computer zoekt de kortste oplossing door standen af te gaan. Hier zie je dat echt gebeuren op een 2×2×2, met en zonder twee trucs. Daarna zie je hoe de 3×3×3 hetzelfde doet.':'A computer finds the shortest solution by going through positions. Here you see it happen on a 2×2×2, with and without two tricks. Then you see how the 3×3×3 does the same.','TWEE KANTEN':'TWO SIDES','Hussel, en kies hoe de computer zoekt. Hij telt hoeveel standen hij moet bekijken.':'Shuffle, and choose how the computer searches. It counts how many positions it has to look at.','Eén kant: vanaf de hussel alle draaien proberen, dan alle draaien daarvan, tot je de opgeloste stand tegenkomt. Twee kanten: je zoekt ook vanaf de opgeloste stand en stopt zodra de twee zoekgebieden elkaar raken. Elk gebied hoeft maar half zo diep.':'One side: from the shuffle try every turn, then every turn after that, until you meet the solved position. Two sides: you also search from the solved position and stop as soon as the two search areas touch. Each area only has to go half as deep.','TABEL':'TABLE','Een tabel onthoudt van de standen vlak bij opgelost hoeveel zetten ze minstens nodig hebben. Een reeks die al te lang is, valt meteen af. Zoek dezelfde hussel zonder en met tabel.':'A table remembers, for the positions close to solved, how many moves they need at least. A sequence that is already too long is dropped at once. Search the same shuffle without and with the table.','DE 3×3×3':'THE 3×3×3','De grote kubus heeft te veel standen voor één zoektocht. Een oplosser knipt het werk in twee fasen en gebruikt in elke fase een tabel.':'The big cube has too many positions for one search. A solver cuts the work into two phases and uses a table in each phase.','Fase 1 brengt de kubus in een kleine familie van standen, in hooguit 12 zetten. Fase 2 lost hem daarbinnen op, in hooguit 18. Zo vindt de oplosser snel een oplossing van ongeveer 20 zetten en zoekt hij daarna door naar een kortere. Zo zijn de oplossingen op deze pagina gemaakt.':'Phase 1 brings the cube into a small family of positions, in at most 12 moves. Phase 2 solves it inside that family, in at most 18. This way the solver quickly finds a solution of about 20 moves and then keeps searching for a shorter one. This is how the solutions on this page were made.','Hoe vindt een computer de kortste weg?':'How does a computer find the shortest way?','extra: twee trucs':'extra: two tricks','ONDERDELEN':'PARTS','Een computer vindt de kortste weg door slim te zoeken, niet door alles te proberen. Een mens onthoudt liever een methode, ook al kost die meer zetten. Daarom speelt deze pagina de korte routes af die een computer vooraf heeft gezocht.':'A computer finds the shortest way by searching cleverly, not by trying everything. A person prefers to remember a method, even if it takes more moves. That is why this page plays the short routes that a computer searched beforehand.','BEDENKER':'INVENTOR','De kubus is in 1974 bedacht door de Hongaarse architect Ernő Rubik.':'The cube was invented in 1974 by the Hungarian architect Ernő Rubik.','INSTELLINGEN':'SETTINGS','Standaard tonen':'Show by default','LETTERS':'LETTERS','BEGINSTAND KUBUS':'CUBE START VIEW','BEDIENING':'CONTROLS','Uitleg en oefening over de kubus van Rubik. Eerst doen, dan begrijpen, dan oefenen.':'Explanation and practice about the Rubik\'s cube. First do, then understand, then practise.','De taalknop wisselt tussen Nederlands en Engels, de halve cirkel tussen donker en licht.':'The language button switches between Dutch and English, the half circle between dark and light.',
+'Wat blijft er hangen? Een korte ronde vertelt het.':'What sticks? A short round will tell.'
+};
+const BTN_IDS=['tab-uitleg','tab-oefenen','turn','reset0','reset2','reset3','reset5','step','play1','play6','to-train','start','again'];
+const STATIC=[];
+(function(){const ok=new Set(['B','SUP','BR','SPAN','I']);
+ $$('body *').forEach(e=>{if(e.closest('svg'))return;if(e.id&&!BTN_IDS.includes(e.id))return;
+  if([...e.children].some(k=>!ok.has(k.tagName)||k.id||k.querySelector('[id]')))return;
+  const t=e.innerHTML.trim();if(t in EN)STATIC.push([e,t]);});})();
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const TOUCH=matchMedia('(pointer: coarse)').matches;
+const CH='<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';
+const IOK='<svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>';
+const IBAD='<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+const FACES='UDLRFB';
+const KINDS=['',"'",'2'];
+const ALL=[];for(const f of FACES)for(const k of KINDS)ALL.push(f+k);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const dots=s=>s.replace(/\B(?=(\d{3})+(?!\d))/g,LANG==='en'?',':'.');
+const sciFmt=b=>{const s=b.toString();if(s.length<4)return s;return (s[0]+'.'+s.slice(1,5)).replace(/0+$/,'').replace(/\.$/,'').replace('.',LANG==='en'?'.':',')+' × 10^'+(s.length-1);};
+const showNum=(b,sci)=>sci?sciFmt(b):dots(b.toString());
+const setHints=()=>{const t=L(TOUCH?'1 vinger draait · 2 vingers schuiven · knijp om te zoomen':'Sleep om te draaien · scroll om te zoomen',TOUCH?'1 finger rotates · 2 fingers pan · pinch to zoom':'Drag to rotate · scroll to zoom');$$('.hint').forEach(h=>h.textContent=t);};
+
+/* ---- kubusscène ---- */
+const LTR={white:'U',yellow:'D',orange:'L',red:'R',green:'F',blue:'B'};
+const FLIP=[[1,0,0],[0,-1,0],[0,0,1]];
+const cls={'1,0,0':'px','-1,0,0':'nx','0,1,0':'py','0,-1,0':'ny','0,0,1':'pz','0,0,-1':'nz'};
+const MESH=(()=>{const H=.5,R=.085,A=[-H,-H+R/2,-(H-R),H-R,H-R/2,H],cl=v=>Math.max(-(H-R),Math.min(H-R,v));
+  const V=[],N=[],Q=[];
+  for(let a=0;a<3;a++)for(const s of [1,-1]){const b=(a+1)%3,c2=(a+2)%3,base=V.length/3;const dirI=(s>0?0:3)+a;
+    for(const u of A)for(const v of A){const p=[0,0,0];p[a]=s*H;p[b]=u;p[c2]=v;
+      const c=p.map(cl),d=p.map((x,i)=>x-c[i]),l=Math.hypot(d[0],d[1],d[2]);
+      V.push(c[0]+R*d[0]/l,c[1]+R*d[1]/l,c[2]+R*d[2]/l);N.push(d[0]/l,d[1]/l,d[2]/l);}
+    for(let i=0;i<5;i++)for(let j=0;j<5;j++){const i0=base+i*6+j;Q.push([i0,i0+1,i0+7,i0+6,dirI]);}}
+  return {V:Float32Array.from(V),N:Float32Array.from(N),Q};})();
+const STK=(()=>{const h=.42,r=.11,pts=[];const cs=[[h-r,h-r,0],[-(h-r),h-r,90],[-(h-r),-(h-r),180],[h-r,-(h-r),270]];
+  for(const [cx,cy,a0] of cs)for(let k=0;k<=5;k++){const a=(a0+k*18)*Math.PI/180;pts.push([cx+r*Math.cos(a),cy+r*Math.sin(a)]);}
+  return pts;})();
+const AXI={'1,0,0':[0,1],'-1,0,0':[0,-1],'0,1,0':[1,1],'0,-1,0':[1,-1],'0,0,1':[2,1],'0,0,-1':[2,-1]};
+const hex=h=>{h=h.trim();if(h[0]!=='#')return [128,128,128];if(h.length===4)h='#'+h[1]+h[1]+h[2]+h[2]+h[3]+h[3];return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];};
+const LV=(()=>{const l=[-.35,-.55,.76],m=Math.hypot(...l);return l.map(x=>x/m);})();
+const HV=(()=>{const h=[LV[0],LV[1],LV[2]+1],m=Math.hypot(...h);return h.map(x=>x/m);})();
+let BASEV={rx:-26,ry:-28};try{const v=JSON.parse(localStorage.getItem('view'));if(v&&typeof v.rx==='number'&&typeof v.ry==='number')BASEV=v;}catch(e){}
+const SCENES=[];
+function Scene(el,opts){opts=opts||{};
+  const cv=document.createElement('canvas'),ctx=cv.getContext('2d');el.appendChild(cv);
+  let cs=newCubies(opts.pal),S=60,W=0,Hh=0,queue=Promise.resolve(),gen=0,rot0=null;
+  if(opts.init)opts.init(cs);
+  const V=()=>Object.assign({z:1,tx:0,ty:0},typeof opts.view==='function'?opts.view():(opts.view||BASEV)),view=V();let selFace=null,lastItems=[];
+  const faceOf=d=>Math.round(d[1])===1?'U':Math.round(d[1])===-1?'D':Math.round(d[0])===1?'R':Math.round(d[0])===-1?'L':Math.round(d[2])===1?'F':'B';
+  function render(axis,angle){
+    if(!W)return;
+    const dpr=window.devicePixelRatio||1;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,Hh);
+    const cst=getComputedStyle(el),col={};['white','yellow','red','orange','blue','green'].forEach(k=>col[k]=hex(cst.getPropertyValue('--cube-'+k)));
+    col.off=hex(cst.getPropertyValue('--off'));col.bg=hex(cst.getPropertyValue('--bg'));const body=hex(cst.getPropertyValue('--cube-body'));
+    const R=axis?rnd(rot(axis,angle)):null,Rr=axis?rot(axis,angle):null;
+    const cy=Math.cos(view.ry*Math.PI/180),sy=Math.sin(view.ry*Math.PI/180),cx=Math.cos(view.rx*Math.PI/180),sx=Math.sin(view.rx*Math.PI/180);
+    const PD=900,ox=W/2+view.tx,oy=Hh/2+view.ty,vz=view.z;
+    const vt=(X,Y,Z)=>{let x1=cy*X+sy*Z,z1=-sy*X+cy*Z,y2=cx*Y-sx*z1,z2=sx*Y+cx*z1;return [x1*vz,y2*vz,z2*vz];};
+    const vn=(X,Y,Z)=>{let x1=cy*X+sy*Z,z1=-sy*X+cy*Z,y2=cx*Y-sx*z1,z2=sx*Y+cx*z1;return [x1,y2,z2];};
+    const items=[];const nv=MESH.V.length/3;const sp=new Float32Array(nv*3),sn=new Float32Array(nv*3);
+    for(const c of cs){
+      let M=c.M,p=c.p;if(axis&&dot(c.p,axis)===1){M=mm(Rr,M);p=mv(Rr,p);}
+      for(let i=0;i<nv;i++){const x=MESH.V[3*i],y=MESH.V[3*i+1],z=MESH.V[3*i+2];
+        const wx=M[0][0]*x+M[0][1]*y+M[0][2]*z+p[0],wy=M[1][0]*x+M[1][1]*y+M[1][2]*z+p[1],wz=M[2][0]*x+M[2][1]*y+M[2][2]*z+p[2];
+        const t=vt(wx*S,-wy*S,wz*S);const k=PD/(PD-t[2]);sp[3*i]=ox+t[0]*k;sp[3*i+1]=oy+t[1]*k;sp[3*i+2]=t[2];
+        const nx=MESH.N[3*i],ny=MESH.N[3*i+1],nz=MESH.N[3*i+2];
+        const n=vn(M[0][0]*nx+M[0][1]*ny+M[0][2]*nz,-(M[1][0]*nx+M[1][1]*ny+M[1][2]*nz),M[2][0]*nx+M[2][1]*ny+M[2][2]*nz);sn[3*i]=n[0];sn[3*i+1]=n[1];sn[3*i+2]=n[2];}
+      for(const q of MESH.Q){const a=q[0],b=q[1],c3=q[2],d=q[3];
+        const nxm=(sn[3*a]+sn[3*b]+sn[3*c3]+sn[3*d])/4,nym=(sn[3*a+1]+sn[3*b+1]+sn[3*c3+1]+sn[3*d+1])/4,nzm=(sn[3*a+2]+sn[3*b+2]+sn[3*c3+2]+sn[3*d+2])/4;
+        if(nzm<-.05)continue;const ln=Math.hypot(nxm,nym,nzm)||1,lam=Math.max(0,(nxm*LV[0]+nym*LV[1]+nzm*LV[2])/ln),sh=Math.max(0,(nxm*HV[0]+nym*HV[1]+nzm*HV[2])/ln);
+        const f=.55+.6*lam,sp2=Math.pow(sh,24)*70;
+        items.push({z:(sp[3*a+2]+sp[3*b+2]+sp[3*c3+2]+sp[3*d+2])/4,pts:[sp[3*a],sp[3*a+1],sp[3*b],sp[3*b+1],sp[3*c3],sp[3*c3+1],sp[3*d],sp[3*d+1]],
+          c:'rgb('+Math.min(255,body[0]*f+sp2|0)+','+Math.min(255,body[1]*f+sp2|0)+','+Math.min(255,body[2]*f+sp2|0)+')'});}
+      for(const s of c.st){const key=s.d.join(',');const ai=AXI[key];const dir=[0,0,0];dir[ai[0]]=ai[1];
+        const dw=mv(M,dir),nn=vn(dw[0],-dw[1],dw[2]);if(nn[2]<=.02)continue;
+        const b2=(ai[0]+1)%3,c2=(ai[0]+2)%3;const e1=[0,0,0],e2=[0,0,0];e1[b2]=1;e2[c2]=1;
+        const w1=mv(M,e1),w2=mv(M,e2);
+        const P=(u,v)=>{const x=dw[0]*.503+w1[0]*u+w2[0]*v+p[0],y=dw[1]*.503+w1[1]*u+w2[1]*v+p[1],z=dw[2]*.503+w1[2]*u+w2[2]*v+p[2];
+          const t=vt(x*S,-y*S,z*S),k=PD/(PD-t[2]);return [ox+t[0]*k,oy+t[1]*k,t[2]];};
+        const fc=faceOf(dw),isSel=selFace&&fc===selFace;const ctr=P(0,0);let cn=s.c;const mask=opts.mask&&!opts.mask(c,s);
+        if(mask)cn='off';else if(el.dataset.hl&&el.dataset.hl!==(c.t===3?'corner':c.t===2?'edge':'center'))cn='bg';
+        const base=col[cn]||[128,128,128];const lam=Math.max(0,nn[0]*LV[0]+nn[1]*LV[1]+nn[2]*LV[2]),f=(.92+.2*lam)*(isSel?1.1:1);
+        const poly=STK.map(q2=>P(q2[0],q2[1]));
+        items.push({z:ctr[2]+.6,poly,c:'rgb('+Math.min(255,base[0]*f|0)+','+Math.min(255,base[1]*f|0)+','+Math.min(255,base[2]*f|0)+')',
+          letter:(el.dataset.letters&&c.t===1&&!mask)?LTR[s.c]:null,lc:(s.c==='red'||s.c==='blue'||s.c==='green')?'#fff':'#121214',o:ctr,a:P(1,0),b:P(0,1),face:fc,sel:isSel});}
+    }
+    items.sort((a,b)=>a.z-b.z);lastItems=items;const accent=cst.getPropertyValue('--accent').trim()||'#fff';
+    ctx.lineJoin='round';
+    for(const it of items){ctx.beginPath();
+      if(it.pts){const p=it.pts;ctx.moveTo(p[0],p[1]);ctx.lineTo(p[2],p[3]);ctx.lineTo(p[4],p[5]);ctx.lineTo(p[6],p[7]);ctx.closePath();ctx.fillStyle=ctx.strokeStyle=it.c;ctx.lineWidth=.7;ctx.fill();ctx.stroke();}
+      else{it.poly.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.closePath();ctx.fillStyle=it.c;ctx.fill();if(it.sel){ctx.lineWidth=2.5;ctx.strokeStyle=accent;ctx.stroke();}
+        if(it.letter){ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);{let ax=it.a[0]-it.o[0],ay=it.a[1]-it.o[1],bx=it.b[0]-it.o[0],by=it.b[1]-it.o[1];if(ax*by-ay*bx<0){ax=-ax;ay=-ay;}let bk=[ax,ay,bx,by];for(let k=0;k<4;k++){const c=[ax,ay,bx,by];for(let r=0;r<k;r++){const nx=c[2],ny=c[3];c[2]=-c[0];c[3]=-c[1];c[0]=nx;c[1]=ny;}if(c[3]>bk[3]||k===0)bk=c;}ctx.transform(bk[0],bk[1],bk[2],bk[3],it.o[0],it.o[1]);}
+          ctx.font='600 .62px system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=it.lc;ctx.fillText(it.letter,0,.03);ctx.restore();}}}
+  }
+  function layout(){render();}
+  function size(){const r=el.getBoundingClientRect();if(!r.width)return;W=r.width;Hh=r.height;S=Math.min(W,Hh)/5.2;const dpr=window.devicePixelRatio||1;cv.width=Math.round(W*dpr);cv.height=Math.round(Hh*dpr);render();}
+  function anim(tok){
+    const my=gen,q=parse(tok);
+    return new Promise(res=>{
+      if(my!==gen)return res();
+      const dur=RM?0:Math.abs(q.phi)>2?420:260,t0=performance.now();
+      const done=()=>{if(my===gen){applyMove(cs,tok);render();}res();};
+      if(!dur)return done();
+      (function f(t){if(my!==gen)return res();const u=Math.min(1,(t-t0)/dur),e=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+        render(q.n,q.phi*e);u<1?requestAnimationFrame(f):done();})(t0);
+    });
+  }
+  const api={
+    cs:()=>cs,
+    move(tok){queue=queue.then(()=>anim(tok));return queue;},
+    seq(a){a.forEach(t=>api.move(t));return queue;},
+    instant(a){gen++;queue=Promise.resolve();a.forEach(t=>applyMove(cs,t));render();},
+    home(){Object.assign(view,V());render();},
+    reset(){gen++;Object.assign(view,V());queue=Promise.resolve();cs=newCubies(opts.pal);if(opts.init)opts.init(cs);render();},
+    sel(f){selFace=f;render();},
+    letters(on){if(on)el.dataset.letters='1';else delete el.dataset.letters;render();},
+    hl(k){if(k)el.dataset.hl=k;else delete el.dataset.hl;render();},
+    solved:()=>isSolved(cs)&&cs.every(c=>c.p.join()===c.home.join())
+  };
+  if(!opts.view||typeof opts.view==='function')SCENES.push(api);
+  size();new ResizeObserver(size).observe(el);
+  new MutationObserver(()=>render()).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  /* gebaren: 1 vinger draait, 2 vingers schuiven en knijpen */
+  const ptr=new Map();let last=null;
+  const mid=()=>{const a=[...ptr.values()];return a.length<2?null:{x:(a[0].x+a[1].x)/2,y:(a[0].y+a[1].y)/2,d:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)};};
+  let tap0=null;
+  el.addEventListener('pointerdown',e=>{tap0=ptr.size===0?{x:e.clientX,y:e.clientY}:null;el.setPointerCapture(e.pointerId);ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});last=mid();el.style.cursor='grabbing';});
+  el.addEventListener('pointermove',e=>{
+    if(!ptr.has(e.pointerId))return;const o=ptr.get(e.pointerId),n={x:e.clientX,y:e.clientY};ptr.set(e.pointerId,n);
+    if(ptr.size===1){view.ry+=(n.x-o.x)*.5;view.rx=Math.max(-89,Math.min(89,view.rx-(n.y-o.y)*.5));}
+    else if(ptr.size===2){const m=mid();if(last){view.tx+=m.x-last.x;view.ty+=m.y-last.y;if(last.d>0)view.z=Math.max(.6,Math.min(2,view.z*m.d/last.d));}last=m;}
+    render();
+  });
+  const hit=(px,py,poly)=>{let ins=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if((a[1]>py)!==(b[1]>py)&&px<(b[0]-a[0])*(py-a[1])/(b[1]-a[1])+a[0])ins=!ins;}return ins;};
+  const up=e=>{if(tap0&&ptr.size===1&&e.type==='pointerup'&&Math.hypot(e.clientX-tap0.x,e.clientY-tap0.y)<6&&opts.onPick){const r=el.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top;
+      for(let k=lastItems.length-1;k>=0;k--){const it=lastItems[k];if(it.poly&&it.face&&hit(px,py,it.poly)){opts.onPick(it.face);break;}}}
+    tap0=null;ptr.delete(e.pointerId);last=mid();el.style.cursor='';};
+  el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
+  el.addEventListener('wheel',e=>{if(TOUCH)return;e.preventDefault();view.z=Math.max(.6,Math.min(2,view.z*(e.deltaY<0?1.08:.93)));render();},{passive:false});
+  return api;
+}
+const mkBtn=(txt,cl,fn)=>{const b=document.createElement('button');b.className='btn '+(cl||'');b.textContent=txt;if(fn)b.onclick=fn;return b;};
+
+/* ---- tabs, thema, taal ---- */
+const tabs=['uitleg','oefenen'],sy={uitleg:0,oefenen:0};let cur='uitleg';
+function show(t,fromHash){
+  if(t===cur&&!fromHash)return;
+  sy[cur]=window.scrollY;
+  tabs.forEach(n=>{$('#'+n).classList.toggle('hidden',n!==t);$('#tab-'+n).setAttribute('aria-selected',n===t);});
+  cur=t;history.replaceState(null,'','#'+t);window.scrollTo(0,sy[t]||0);
+}
+tabs.forEach(t=>$('#tab-'+t).onclick=()=>show(t));
+$('#to-train').onclick=()=>{sy.oefenen=0;show('oefenen');};
+if(tabs.includes(location.hash.slice(1)))show(location.hash.slice(1),true);
+try{const th=localStorage.getItem('theme');if(th)document.documentElement.dataset.theme=th;}catch(e){}
+$('#theme').onclick=()=>{const d=document.documentElement,n=d.dataset.theme==='light'?'dark':'light';d.dataset.theme=n;try{localStorage.setItem('theme',n);}catch(e){}};
+const ab=$('#about');$('#info').onclick=()=>ab.showModal();$('#about-x').onclick=()=>ab.close();
+ab.addEventListener('click',e=>{if(e.target===ab)ab.close();});
+const st=$('#set');$('#gear').onclick=()=>st.showModal();$('#set-x').onclick=()=>st.close();
+st.addEventListener('click',e=>{if(e.target===st)st.close();});
+let LDEF=true;try{LDEF=localStorage.getItem('letters')!=='0';}catch(e){}
+const setLet=on=>{$('#lettersT').setAttribute('aria-checked',on);sct.letters(on);};
+function applyLetters(on){[s2,s5,...dst.map(d=>d.sc)].forEach(x=>x.letters(on));$('#letters2').setAttribute('aria-checked',on);setLet(on);}
+const lD=$('#lettersD');lD.setAttribute('aria-checked',LDEF);
+lD.onclick=()=>{LDEF=lD.getAttribute('aria-checked')!=='true';lD.setAttribute('aria-checked',LDEF);try{localStorage.setItem('letters',LDEF?'1':'0');}catch(e){}applyLetters(LDEF);};
+const VIEWS=[['Links','Left',{rx:-26,ry:28}],['Rechts','Right',{rx:-26,ry:-28}],['Links, van boven','Left, from above',{rx:-52,ry:28}],['Rechts, van boven','Right, from above',{rx:-52,ry:-28}]];
+const vws=VIEWS.map(v=>{const b=document.createElement('button'),sc=document.createElement('div'),t=document.createElement('span');sc.className='scene';b.append(sc,t);Scene(sc,{view:v[2]});
+  b.onclick=()=>{BASEV=v[2];try{localStorage.setItem('view',JSON.stringify(BASEV));}catch(e){}SCENES.forEach(x=>x.home());drawViews();};$('#views').appendChild(b);return {b,t,v};});
+function drawViews(){vws.forEach(o=>{o.t.textContent=L(o.v[0],o.v[1]);o.b.setAttribute('aria-pressed',o.v[2].rx===BASEV.rx&&o.v[2].ry===BASEV.ry);});}
+$('#lang').onclick=()=>{LANG=LANG==='en'?'nl':'en';try{localStorage.setItem('lang',LANG);}catch(e){}applyLang();};
+
+
+/* ---- paragrafen: accordeon, rustig scherm ---- */
+function stable(el,fn){const t0=el.getBoundingClientRect().top;fn();const d=el.getBoundingClientRect().top-t0;if(d)window.scrollBy(0,d);}
+function accord(list,btn,first){let allMode=false;
+  const upd=()=>{const any=list.some(d=>d.open);btn.setAttribute('aria-label',any?L('Alles inklappen','Collapse all'):L('Alles uitklappen','Expand all'));btn.title=btn.getAttribute('aria-label');btn.classList.toggle('up',any);};
+  list.forEach(d=>$('summary',d).addEventListener('click',e=>{e.preventDefault();stable(e.currentTarget,()=>{
+    if(d.open)d.open=false;else{if(!allMode)list.forEach(o=>{if(o!==d)o.open=false;});d.open=true;}upd();});}));
+  btn.onclick=e=>stable(btn,()=>{const any=list.some(d=>d.open);allMode=!any;list.forEach(d=>d.open=!any);upd();});
+  if(first)list[0].open=true;upd();return upd;}
+const SECS=$$('details.sec');let updExp=accord(SECS,$('#expall'),false);
+
+/* ---- 0 kennismaken ---- */
+const s0=Scene($('#sc0'));let c0=0;
+const drawN0=()=>{$('#n0').textContent=c0;$('#n0l').textContent=c0===1?L('zet gedaan','move made'):L('zetten gedaan','moves made');};
+$('#turn').onclick=()=>{s0.move(pick(ALL));c0++;drawN0();};
+$('#reset0').onclick=()=>{s0.reset();c0=0;drawN0();};
+
+/* ---- 1 anatomie ---- */
+const s1=Scene($('#sc1'));
+const HL=[[['Alles','All'],null,['26 stukken','26 pieces']],[['Hoeken','Corners'],'corner',['8 hoeken · 3 kleuren elk','8 corners · 3 colours each']],[['Randen','Edges'],'edge',['12 randen · 2 kleuren elk','12 edges · 2 colours each']],[['Centra','Centres'],'center',['6 middens · 1 kleur elk','6 centres · 1 colour each']]];
+let hlI=0;
+const hc=$('#hl-chips');
+function drawHL(){hc.innerHTML='';HL.forEach((h,i)=>hc.appendChild(mkBtn(L(h[0][0],h[0][1]),i===hlI?'pri':'',()=>{hlI=i;s1.hl(h[1]);drawHL();})));
+  $('#hl-ro').innerHTML='<span><b>'+L(HL[hlI][2][0],HL[hlI][2][1])+'</b></span>';}
+
+/* ---- 2 notatie ---- */
+const s2=Scene($('#sc2'));let kind='',lastMove='',tab2=0,sq=[];
+const FN={U:['Up','boven','top'],D:['Down','onder','bottom'],L:['Left','links','left'],R:['Right','rechts','right'],F:['Front','voor','front'],B:['Back','achter','back']};
+const KN={'':['kwartslag met de klok mee','quarter turn clockwise'],"'":['kwartslag tegen de klok in','quarter turn counter-clockwise'],'2':['halve slag','half turn']};
+const mean=t=>'<b>'+L(FN[t[0]][1],FN[t[0]][2])+'</b>, '+L(KN[t.slice(1)][0],KN[t.slice(1)][1]);
+function drawLegend(){$('#legend2').innerHTML=[...FACES].map(f=>'<div class="step on"><b>'+f+'</b><span>'+(LANG==='en'?FN[f][0]:FN[f][0]+', '+FN[f][1])+'</span></div>').join('');}
+$('#letters2').onclick=e=>{const on=e.currentTarget.getAttribute('aria-checked')!=='true';e.currentTarget.setAttribute('aria-checked',on);s2.letters(on);};
+const KL=[[['Kwart','Quarter'],''],[['Terug','Reverse'],"'"],[['Half','Half'],'2']];
+const invT=t=>t.endsWith("'")?t[0]:t.endsWith('2')?t:t+"'";
+const T2=[[['Draai','Turn'],['Kies hoe je draait (Kwart, Terug of Half) en druk dan op een letter. Een \' draait de andere kant op en een 2 is een halve slag. Zes zijden, drie soorten draai: dat zijn 18 zetten.','Pick how you turn (Quarter, Reverse or Half), then press a letter. A \' turns the other way and a 2 is a half turn. Six sides, three kinds of turn: that makes 18 moves.']],
+ [['Tegendraai','Undo'],['Elke zet heeft een tegenzet: R en R\' heffen elkaar op. Wil je een hele reeks terugdraaien, neem dan de zetten in omgekeerde volgorde en draai bij elke zet de richting om. Een 2 blijft een 2. Doe hieronder een paar zetten en draai ze dan in omgekeerde volgorde terug.','Every move has an undo: R and R\' cancel each other. To undo a whole sequence, take the moves in reverse order and flip the direction of each move. A 2 stays a 2. Below, make a few moves, then undo them in reverse order.']]];
+const pad=$('#pad2');pad.style.cssText='display:grid;gap:8px';
+const mkRow=(g,items)=>{const r=document.createElement('div');r.className='eq '+g;items.forEach(x=>r.appendChild(x));return r;};
+function drawSq(){$('#seq2b').textContent=sq.join(' ')||'–';$('#inv2b').textContent=sq.length?[...sq].reverse().map(invT).join(' '):'–';}
+const drawMean=()=>{$('#mean2').innerHTML=lastMove?'· '+mean(lastMove):'';};
+function drawPad(){
+  const tb=$('#tabs2');tb.innerHTML='';T2.forEach((t,i)=>tb.appendChild(mkBtn(L(t[0][0],t[0][1]),i===tab2?'pri':'',()=>{if(i!==tab2){tab2=i;resetS2();}drawPad();})));
+  $('#t2txt').textContent=L(T2[tab2][1][0],T2[tab2][1][1]);
+  $('#ro2a').style.display=tab2?'none':'';$('#ro2b').style.display=tab2?'':'none';
+  pad.innerHTML='';
+  if(!tab2){pad.appendChild(mkRow('g3',KL.map(k=>mkBtn(L(k[0][0],k[0][1]),k[1]===kind?'pri':'',()=>{kind=k[1];drawPad();}))));
+    pad.appendChild(mkRow('g6',[...FACES].map(f=>mkBtn(f+kind,'',()=>{const t=f+kind;s2.move(t);lastMove=t;$('#last2').textContent=t;drawMean();}))));}
+  else[['',''],["'",'']].forEach(([k])=>pad.appendChild(mkRow('g6',[...FACES].map(f=>mkBtn(f+k,'',()=>{s2.move(f+k);sq.push(f+k);drawSq();})))));
+}
+function resetS2(){s2.reset();lastMove='';sq=[];$('#last2').textContent='–';drawMean();drawSq();}
+$('#reset2').onclick=resetS2;
+
+/* ---- 3 tellen ---- */
+const FACT=n=>{let r=1n;for(let i=2n;i<=BigInt(n);i++)r*=i;return r;};
+const ST=[[['Hoeken verplaatsen','Corner positions'],'8!',FACT(8)],[['Hoeken draaien','Corner twists'],'3^7',3n**7n],[['Randen verplaatsen','Edge positions'],'12! ÷ 2',FACT(12)/2n],[['Randen omklappen','Edge flips'],'2^11',2n**11n]];
+let n3=0,sci=false;
+function draw3(){
+  const box=$('#steps');box.innerHTML='';let tot=1n;
+  ST.forEach((s,i)=>{if(i<n3)tot*=s[2];
+    const d=document.createElement('div');d.className='step'+(i<n3?' on':'');
+    d.innerHTML='<span>'+L(s[0][0],s[0][1])+'<br><span class="small" style="font-family:var(--font-mono)">'+s[1]+'</span></span><span class="v">'+(i<n3?showNum(s[2],sci):'')+'</span>';box.appendChild(d);});
+  $('#total').textContent=n3?showNum(tot,sci):'–';
+  $('#step').disabled=n3>=ST.length;
+}
+$('#step').onclick=()=>{n3++;draw3();};
+$('#reset3').onclick=()=>{n3=0;draw3();};
+$('#sci').onclick=e=>{sci=!sci;e.currentTarget.setAttribute('aria-checked',sci);draw3();};
+
+/* ---- 4 grens ---- */
+const D4=[1,18,243,3240,43239,574908,7618438,100803036,1332343288,17596479795,232248063316,3063288809012,40374425656248,531653418284628,6989320578825358,91365146187124313,1.1e18,1.2e19,2.9e19,1.5e18,4.9e8];
+const S4=D4.reduce((x,y)=>x+y,0);
+const hist=$('#hist');D4.forEach(()=>hist.appendChild(document.createElement('i')));
+function draw4(){
+  const n=+$('#nr').value,mx=Math.max(...D4);let cum=0;for(let k=0;k<=n;k++)cum+=D4[k];const p=cum/S4*100;
+  $('#nv').textContent=n;
+  [...hist.children].forEach((e,k)=>{e.style.height=Math.max(2,D4[k]/mx*100)+'%';e.className=k<=n?'on':'';});
+  const en=LANG==='en',dec=s=>en?s:s.replace('.',',');
+  const pt=p>=99.9999?(n===20?'100%':L('bijna 100%','almost 100%')):p<0.1?L('minder dan 0,1%','under 0.1%'):dec((p<10?p.toFixed(1):p.toFixed(0))+'%');
+  $('#n4a').innerHTML=L('Met hooguit <b>'+n+'</b> '+(n===1?'zet':'zetten')+' los je <b>'+pt+'</b> van alle standen op.','With at most <b>'+n+'</b> '+(n===1?'move':'moves')+' you solve <b>'+pt+'</b> of all positions.');
+  const U=en?[[1e18,'quintillion'],[1e15,'quadrillion'],[1e12,'trillion'],[1e9,'billion'],[1e6,'million']]:[[1e18,'triljoen'],[1e15,'biljard'],[1e12,'biljoen'],[1e9,'miljard'],[1e6,'miljoen']];
+  const v=D4[n],u=U.find(x=>v>=x[0]);let num,ap=!!u;
+  if(u){const x=v/u[0];num=dec((x>=10?Math.round(x):+x.toFixed(1)).toString())+' '+u[1];}else num=dots(String(v));
+  const cu=v===1?L('stand heeft','position needs'):L('standen hebben','positions need'),zt=n===1?L('zet','move'):L('zetten','moves');
+  $('#n4b').innerHTML=L((ap?'Ongeveer ':'Precies ')+'<b>'+num+'</b> '+cu+' <b>'+n+'</b> '+zt+' nodig.',(ap?'About ':'Exactly ')+'<b>'+num+'</b> '+cu+' <b>'+n+'</b> '+zt+'.');
+}
+$('#nr').oninput=draw4;
+
+/* ---- 5 fasen ---- */
+let DEMO={"sc":"U' F U2 B L D B' D L B F R F2 U2 B' D' L' D2 U' L' D B2","ph":[[["e:orange-yellow","d",1,"B"],["e:yellow-blue","d",1,"U B'"],["e:yellow-green","d",1,"L F"],["e:red-yellow","d",1,"B' L B"],["","k",1,"F2"],["","k",1,"B2"],["","u",1,"U2"],["","k",1,"R2"],["","k",1,"L2"]],[["c:orange-yellow-blue","c",1,"R U R' U'"],["","c",1,"L U L' U'"],["","c",1,"B U B' U'"],["","c",1,"L U L' U'"],["c:red-yellow-green","u",1,"U2"],["","c",1,"R U R' U'"]],[["e:orange-blue","u",1,"U'"],["","m-r",1,"U L U' L' U' B' U B"],["e:red-blue","m-r",1,"U B U' B' U' R' U R"],["","u",1,"U2"],["","m-r",1,"U B U' B' U' R' U R"],["e:red-green","m-l",1,"U' F' U F U R U' R'"]],[["","u",1,"U2"],["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","s",1,"R U R' U R U2 R'"],["","u",1,"U'"],["","s",1,"R U R' U R U2 R'"]],[["","u",1,"U"],["","p",1,"U R U' L' U R' U' L"],["","p",1,"U B U' F' U B' U' F"],["","p",1,"U F U' B' U F' U' B"],["","p",1,"U B U' F' U B' U' F"]],[["","e",2,"B U' B U B U B U' B' U' B2 B U' B U B U B U' B' U' B2"]]]};
+const COLN={white:['wit','white'],yellow:['geel','yellow'],red:['rood','red'],orange:['oranje','orange'],blue:['blauw','blue'],green:['groen','green']};
+const tk=s=>s.split(' ').filter(Boolean);
+function demoInit(i){return cs=>{tk(DEMO.sc).forEach(t=>applyMove(cs,t));
+  for(let j=0;j<i;j++)DEMO.ph[j].forEach(s=>tk(s[3]).forEach(t=>applyMove(cs,t)));};}
+const ACT={f:['naar zijn plek','to its place'],u:['draai de bovenlaag','turn the top layer'],c:['hoek op zijn plek','corner into place'],'m-r':['rand naar rechts','edge to the right'],'m-l':['rand naar links','edge to the left'],y:['wit kruis','white cross'],s:['hoeken draaien','twist corners'],d:['naar de bovenlaag, geel boven','to the top layer, yellow up'],k:['laat zakken','drop down'],p:['hoeken verplaatsen','move corners'],e:['randen verplaatsen','move edges']};
+function stepLab(s){let pre='';if(s[0]){const q=s[0].split(':'),cn=q[1].split('-').map(x=>L(COLN[x][0],COLN[x][1])).join('-');pre=(q[0]==='e'?L('Rand ','Edge '):L('Hoek ','Corner '))+cn+': ';}
+  const a=ACT[s[1]]||ACT.p;return pre+L(a[0],a[1])+(s[2]>1?' ×'+s[2]:'');}
+const PH=[
+ [['1 Kruis onderaan','1 Cross at the bottom'],['gele kant','yellow side'],
+  ['Doel: vier gele randen onderaan rond het gele midden, elk met zijn andere kleur naast het midden van diezelfde kleur.','Goal: four yellow edges at the bottom around the yellow centre, each with its other colour next to the centre of that same colour.'],
+  [['Houd wit boven. Maak eerst een madeliefje: leg de vier gele randen (geel met één andere kleur) in de bovenlaag rond het witte midden, met geel naar boven.','Keep white on top. First make a daisy: put the four yellow edges (yellow plus one other colour) in the top layer around the white centre, with yellow facing up.'],
+   ['Zit een gele rand ergens anders? Breng hem met een draai van een zijkant naar de bovenlaag. Kijk elke keer eerst waar de rand zit voordat je draait.','Is a yellow edge somewhere else? Bring it to the top layer with a turn of a side. Each time, look first at where the edge is before you turn.'],
+   ['Laat ze dan zakken: draai de bovenlaag tot de andere kleur van een rand gelijk is aan het midden eronder.','Then drop them: turn the top layer until the other colour of an edge matches the centre below it.'],
+   ['Draai die zijkant twee keer (bijvoorbeeld F2). De gele rand ligt nu onderaan, op zijn plek. Herhaal voor de andere drie randen.','Turn that side twice (for example F2). The yellow edge now lies at the bottom, in its place. Repeat for the other three edges.']],
+  ['Draai bij het zakken alleen de zijkant van de rand zelf, twee keer: zo blijven de randen die al onderaan liggen staan. Klopt er iets niet? Draai je laatste zetten terug (omgekeerde volgorde, elke zet omgekeerd).','When dropping, turn only the side of the edge itself, twice: that way the edges already at the bottom stay. Something wrong? Undo your last moves (reverse order, each move reversed).']],
+ [['2 Hoeken onderaan','2 Bottom corners'],['onderlaag, geel onderaan','bottom layer, yellow at the bottom'],
+  ['Doel: de vier gele hoeken in de onderlaag, goed gedraaid, met hun zijkleuren naast de middens van dezelfde kleur.','Goal: the four yellow corners in the bottom layer, twisted right, with their side colours next to the centres of the same colour.'],
+  [['Zoek een gele hoek in de bovenlaag. Draai de bovenlaag tot hij recht boven zijn plek zit: de plek waar zijn drie kleuren bij de drie middens passen.','Find a yellow corner in the top layer. Turn the top layer until it is right above its place: the spot where its three colours match the three centres.'],
+   ["Houd die plek rechts voor. Herhaal <span class='k'>R U R' U'</span> tot de hoek goed zit (hoogstens vijf keer).","Hold that place front right. Repeat <span class='k'>R U R' U'</span> until the corner is right (at most five times)."],
+   ['Zit de plek niet rechts voor? Draai de hele kubus een kwartslag, of schuif de letters F, R, B, L één plek door: F wordt R, R wordt B, B wordt L, L wordt F.','Is the place not front right? Turn the whole cube a quarter turn, or shift the letters F, R, B, L one step: F becomes R, R becomes B, B becomes L, L becomes F.'],
+   ['Zit een gele hoek onderaan op de verkeerde plek? Zet hem met dezelfde reeks naar boven en zoek daarna weer een gele hoek in de bovenlaag.','Is a yellow corner at the bottom in the wrong place? Bring it up with the same sequence and then look again for a yellow corner in the top layer.']],
+  ['Maak de reeks altijd af tot de hoek goed zit: halverwege staan het kruis en de andere hoeken even los. Klopt er na afloop iets niet? Draai de reeks terug (omgekeerde volgorde, elke zet omgekeerd) en begin opnieuw.','Always finish the sequence until the corner is right: halfway, the cross and the other corners are briefly loose. Something wrong afterwards? Undo the sequence (reverse order, each move reversed) and start again.']],
+ [['3 Middelste laag','3 Middle layer'],['randen','edges'],
+  ['Doel: de vier randen zonder wit in de middelste laag. Elke rand past met zijn twee kleuren bij de middens ernaast.','Goal: the four edges without white in the middle layer. Each edge matches the centres next to it with both its colours.'],
+  [['Zoek in de bovenlaag een rand zonder wit.','Find an edge without white in the top layer.'],
+   ['Draai de bovenlaag tot de kleur aan de voorkant gelijk is aan het midden voor.','Turn the top layer until the colour on the front matches the centre in front.'],
+   ["Moet de rand naar rechts? Doe <span class='k'>U R U' R' U' F' U F</span>.","Does the edge go to the right? Do <span class='k'>U R U' R' U' F' U F</span>."],
+   ["Moet hij naar links? Doe <span class='k'>U' L' U L U F U' F'</span>.","Does it go to the left? Do <span class='k'>U' L' U L U F U' F'</span>."],
+   ['Zit een rand al in de middelste laag maar verkeerd? Haal hem eruit met dezelfde reeks vanaf die plek en begin opnieuw. Zit de plek elders, schuif dan de letters door zoals bij fase 2.','Is an edge already in the middle layer but wrong? Take it out with the same sequence from that spot and start again. Is the place elsewhere, shift the letters as in phase 2.']],
+  ['De reeks haalt het kruis en de hoeken even weg en zet ze aan het eind terug. Staan ze daarna niet goed? Draai de reeks terug (omgekeerde volgorde, elke zet omgekeerd).','The sequence briefly takes away the cross and the corners and puts them back at the end. Not right afterwards? Undo the sequence (reverse order, each move reversed).']],
+ [['4 Wit kruis','4 White cross'],['bovenkant','top face'],
+  ['Doel: een wit kruis op de bovenkant. Waar de randen en hoeken precies zitten, maakt nu nog niet uit.','Goal: a white cross on top. Where the edges and corners sit exactly does not matter yet.'],
+  [['Kijk naar de witte stickers op de bovenkant: alleen het midden (punt), een haakje, een streep of al een kruis.','Look at the white stickers on top: only the centre (dot), an L, a line or already a cross.'],
+   ['Punt: doe de reeks één keer. Haakje: houd het haakje links achter. Streep: houd hem van links naar rechts.','Dot: do the sequence once. L: hold the L at the back left. Line: hold it left to right.'],
+   ["Doe <span class='k'>F R U R' U' F'</span>. Kijk opnieuw en herhaal tot het kruis ligt (hoogstens drie keer).","Do <span class='k'>F R U R' U' F'</span>. Look again and repeat until the cross lies (at most three times)."]],
+  ['De onderste twee lagen blijven staan: de reeks haalt ze even weg en zet ze terug. Controleer ze na elke keer. Klopt er iets niet, draai de reeks terug.','The bottom two layers stay: the sequence briefly takes them away and puts them back. Check them each time. Something wrong? Undo the sequence.']],
+ [['5 Witte hoeken draaien','5 Twist white corners'],['wit naar boven','white up'],
+  ['Doel: alle vier de hoeken met wit naar boven. Ze hoeven nog niet op hun eigen plek te staan.','Goal: all four corners with white facing up. They do not have to be in their own place yet.'],
+  [['Kijk hoeveel hoeken al wit boven hebben (nul, één of twee).','See how many corners already have white on top (none, one or two).'],
+   ['Draai de bovenlaag zo dat een witte hoek links voor zit. Zit er geen, draai dan zo dat op links voor een hoek zit met wit naar links.','Turn the top layer so that a white corner is front left. If there is none, turn so that the front left corner has white facing left.'],
+   ["Doe <span class='k'>R U R' U R U2 R'</span>. Draai de bovenlaag weer goed en herhaal tot alle vier wit boven hebben.","Do <span class='k'>R U R' U R U2 R'</span>. Turn the top layer right again and repeat until all four have white on top."]],
+  ['Maak de reeks altijd af: de onderste lagen komen pas na de hele reeks terug. Daartussen mag je alleen de bovenlaag draaien.','Always finish the sequence: the bottom layers only return after the whole sequence. In between, turn only the top layer.']],
+ [['6 Hoeken verplaatsen','6 Move corners'],['goede plek','right place'],
+  ['Doel: elke hoek op zijn eigen plek, met zijn zijkleuren naast de middens van dezelfde kleur.','Goal: each corner in its own place, with its side colours next to the centres of the same colour.'],
+  [['Draai de bovenlaag tot zoveel mogelijk hoeken goed zitten.','Turn the top layer until as many corners as possible are right.'],
+   ['Zoek twee hoeken naast elkaar met dezelfde kleur aan een zijde (koplampen). Houd die zijde achter.','Find two corners next to each other with the same colour on one side (headlights). Hold that side at the back.'],
+   ["Doe <span class='k'>U R U' L' U R' U' L</span>. Draai de bovenlaag en kijk of alle vier goed zitten.","Do <span class='k'>U R U' L' U R' U' L</span>. Turn the top layer and see if all four are right."],
+   ['Zit er geen enkele goed? Doe de reeks één keer vanaf elke stand; dan ontstaan er koplampen.','None right? Do the sequence once from any position; then headlights appear.']],
+  ['Hoeken verschuiven, maar de onderste lagen blijven staan. Klopt er na afloop iets niet? Draai de reeks terug.','Corners move, but the bottom layers stay. Something wrong afterwards? Undo the sequence.']],
+ [['7 Randen verplaatsen','7 Move edges'],['laatste stap','last step'],
+  ['Doel: de laatste vier randen op hun eigen plek. Dan is de kubus opgelost.','Goal: the last four edges in their own place. Then the cube is solved.'],
+  [['Zoek een zijde waar de rand van de bovenlaag al past bij het midden. Houd die zijde achter.','Find a side where the top edge already matches the centre. Hold that side at the back.'],
+   ["Doe <span class='k'>R U' R U R U R U' R' U' R2</span>. De drie andere randen schuiven door.","Do <span class='k'>R U' R U R U R U' R' U' R2</span>. The other three edges rotate."],
+   ['Kijk opnieuw. Klopt het nog niet, herhaal de reeks (hoogstens twee keer). Zit er geen enkele goed? Doe de reeks eenmaal vanaf een willekeurige stand en kijk daarna opnieuw welke zijde al past.','Look again. Still wrong? Repeat the sequence (at most twice). None right? Do the sequence once from any position and then look again for a side that already fits.']],
+  ['Alles onderaan blijft staan. Klopt er iets niet? Draai de reeks terug (omgekeerde volgorde, elke zet omgekeerd).','Everything at the bottom stays. Something wrong? Undo the sequence (reverse order, each move reversed).']]
+];
+/* ---- voorbeelden: kant-en-klare willekeurige kubussen ---- */
+const POOL=[{"sc":"U' F U2 B L D B' D L B F R F2 U2 B' D' L' D2 U' L' D B2","ph":[[["e:orange-yellow","d",1,"B"],["e:yellow-blue","d",1,"U B'"],["e:yellow-green","d",1,"L F"],["e:red-yellow","d",1,"B' L B"],["","k",1,"F2"],["","k",1,"B2"],["","u",1,"U2"],["","k",1,"R2"],["","k",1,"L2"]],[["c:orange-yellow-blue","c",1,"R U R' U'"],["","c",1,"L U L' U'"],["","c",1,"B U B' U'"],["","c",1,"L U L' U'"],["c:red-yellow-green","u",1,"U2"],["","c",1,"R U R' U'"]],[["e:orange-blue","u",1,"U'"],["","m-r",1,"U L U' L' U' B' U B"],["e:red-blue","m-r",1,"U B U' B' U' R' U R"],["","u",1,"U2"],["","m-r",1,"U B U' B' U' R' U R"],["e:red-green","m-l",1,"U' F' U F U R U' R'"]],[["","u",1,"U2"],["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","s",1,"R U R' U R U2 R'"],["","u",1,"U'"],["","s",1,"R U R' U R U2 R'"]],[["","u",1,"U"],["","p",1,"U R U' L' U R' U' L"],["","p",1,"U B U' F' U B' U' F"],["","p",1,"U F U' B' U F' U' B"],["","p",1,"U B U' F' U B' U' F"]],[["","e",2,"B U' B U B U B U' B' U' B2 B U' B U B U B U' B' U' B2"]]]},{"sc":"B R F R2 F2 D2 R2 D' L U B2 F L' R' D' U' B R2 F2 U B2 F","ph":[[["e:orange-yellow","d",1,"L F"],["e:yellow-blue","d",1,"L B'"],["e:yellow-green","d",1,"R"],["e:red-yellow","d",1,"U R' B R"],["","k",1,"F2"],["","k",1,"L2"],["","u",1,"U"],["","k",1,"R2"],["","u",1,"U2"],["","k",1,"B2"]],[["c:orange-yellow-blue","c",1,"R U R' U'"],["","u",1,"U2"],["","c",1,"L U L' U'"],["c:orange-yellow-green","c",1,"B U B' U'"],["","u",1,"U'"],["","c",1,"F U F' U'"],["c:red-yellow-blue","c",4,"B U B' U' B U B' U' B U B' U' B U B' U'"]],[["e:orange-blue","m-l",1,"U' B' U B U L U' L'"],["e:orange-green","m-l",1,"U' L' U L U F U' F'"],["","u",1,"U2"],["","m-l",1,"U' L' U L U F U' F'"],["e:red-blue","m-l",1,"U' R' U R U B U' B'"]],[["","u",1,"U'"],["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","s",1,"R U R' U R U2 R'"],["","u",1,"U'"],["","s",1,"R U R' U R U2 R'"],["","u",1,"U"],["","s",1,"R U R' U R U2 R'"]],[["","u",1,"U2"],["","p",1,"U R U' L' U R' U' L"],["","p",1,"U L U' R' U L' U' R"],["","p",1,"U R U' L' U R' U' L"],["","p",1,"U B U' F' U B' U' F"]],[["","e",1,"B U' B U B U B U' B' U' B2"],["","e",1,"R U' R U R U R U' R' U' R2"]]]},{"sc":"R' F R B' R2 U R2 D L U L F' R' D' B2 U2 F' R U' F' L' B","ph":[[["e:orange-yellow","d",1,"B'"],["e:yellow-blue","d",1,"U B' L"],["e:yellow-green","d",1,"R F' R'"],["e:red-yellow","d",1,"L B' L'"],["","k",1,"F2"],["","u",1,"U"],["","k",1,"R2"],["","k",1,"B2"],["","u",1,"U"],["","k",1,"L2"]],[["c:orange-yellow-blue","u",1,"U"],["","c",1,"L U L' U'"],["","c",1,"B U B' U'"],["","c",1,"L U L' U'"],["c:orange-yellow-green","u",1,"U'"],["","c",1,"F U F' U'"],["c:red-yellow-blue","u",1,"U2"],["","c",1,"B U B' U'"],["c:red-yellow-green","u",1,"U'"],["","c",1,"R U R' U'"]],[["e:orange-blue","m-r",1,"U L U' L' U' B' U B"],["e:orange-green","u",1,"U"],["","m-r",1,"U F U' F' U' L' U L"],["e:red-blue","u",1,"U'"],["","m-l",1,"U' R' U R U B U' B'"],["e:red-green","u",1,"U2"],["","m-l",1,"U' F' U F U R U' R'"]],[["","y",1,"F R U R' U' F'"],["","u",1,"U2"],["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","u",1,"U2"],["","s",3,"R U R' U R U2 R' R U R' U R U2 R' R U R' U R U2 R'"]],[["","u",1,"U"]],[["","e",2,"F U' F U F U F U' F' U' F2 F U' F U F U F U' F' U' F2"]]]},{"sc":"D2 L D' R D' B2 U' L D B2 F' U F' U R' B2 F' D R2 B D2 U","ph":[[["e:orange-yellow","d",1,"L2"],["e:yellow-blue","d",1,"B"],["e:yellow-green","d",1,"R F'"],["","k",1,"F2"],["","k",1,"R2"],["","k",1,"B2"],["","k",1,"L2"]],[["c:orange-yellow-blue","u",1,"U"],["","c",3,"L U L' U' L U L' U' L U L' U'"],["c:red-yellow-green","u",1,"U"],["","c",1,"R U R' U'"],["","u",1,"U"],["","c",1,"R U R' U'"]],[["e:orange-blue","u",1,"U"],["","m-l",1,"U' B' U B U L U' L'"],["e:orange-green","m-l",1,"U' L' U L U F U' F'"],["e:red-blue","u",1,"U2"],["","m-l",1,"U' R' U R U B U' B'"],["e:red-green","u",1,"U2"],["","m-r",1,"U R U' R' U' F' U F"]],[["","y",1,"F R U R' U' F'"],["","u",1,"U2"],["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","u",1,"U"],["","s",1,"R U R' U R U2 R'"],["","u",1,"U2"],["","s",1,"R U R' U R U2 R'"]],[["","u",1,"U2"]],[["","e",1,"L U' L U L U L U' L' U' L2"]]]},{"sc":"R2 U' F L2 F2 D' L2 U2 B' D2 R' B' L' R' U F' R' F L' B L D'","ph":[[["e:orange-yellow","d",1,"R'"],["e:yellow-blue","d",1,"L'"],["e:yellow-green","d",1,"U L"],["e:red-yellow","d",1,"U' B"],["","k",1,"F2"],["","u",1,"U"],["","k",1,"R2"],["","k",1,"B2"],["","u",1,"U"],["","k",1,"L2"]],[["c:orange-yellow-blue","u",1,"U2"],["","c",1,"L U L' U'"],["c:orange-yellow-green","c",2,"F U F' U' F U F' U'"],["c:red-yellow-blue","u",1,"U"],["","c",1,"R U R' U'"],["","c",1,"B U B' U'"],["c:red-yellow-green","u",1,"U"],["","c",1,"R U R' U'"],["","u",1,"U"],["","c",1,"R U R' U'"]],[["e:orange-blue","u",1,"U"],["","m-l",1,"U' B' U B U L U' L'"],["e:orange-green","u",1,"U'"],["","m-r",1,"U F U' F' U' L' U L"],["e:red-blue","m-l",1,"U' R' U R U B U' B'"],["e:red-green","u",1,"U2"],["","m-r",1,"U R U' R' U' F' U F"]],[["","u",1,"U'"],["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","u",1,"U'"],["","s",1,"R U R' U R U2 R'"],["","u",1,"U2"],["","s",1,"R U R' U R U2 R'"]],[["","u",1,"U"],["","p",1,"U R U' L' U R' U' L"],["","p",1,"U L U' R' U L' U' R"],["","p",1,"U R U' L' U R' U' L"],["","p",1,"U B U' F' U B' U' F"]],[["","e",1,"L U' L U L U L U' L' U' L2"]]]},{"sc":"L' U2 L' U2 L U2 R' B2 L2 F L F2 R B2 L U2 R' F' L' F' R F'","ph":[[["e:orange-yellow","d",1,"R'"],["e:yellow-blue","d",1,"B2"],["e:yellow-green","d",1,"L' F"],["","k",1,"F2"],["","k",1,"B2"],["","u",1,"U2"],["","k",1,"R2"],["","k",1,"L2"]],[["c:orange-yellow-blue","u",1,"U'"],["","c",1,"L U L' U'"],["c:orange-yellow-green","c",3,"F U F' U' F U F' U' F U F' U'"],["c:red-yellow-blue","u",1,"U2"],["","c",1,"R U R' U'"],["","c",1,"B U B' U'"],["c:red-yellow-green","c",1,"R U R' U'"],["","u",1,"U"],["","c",1,"R U R' U'"]],[["e:orange-blue","m-l",1,"U' L' U L U F U' F'"],["","u",1,"U'"],["","m-l",1,"U' B' U B U L U' L'"],["e:red-blue","m-l",1,"U' R' U R U B U' B'"]],[["","u",1,"U"],["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","s",3,"R U R' U R U2 R' R U R' U R U2 R' R U R' U R U2 R'"]],[["","u",1,"U"],["","p",1,"U R U' L' U R' U' L"],["","p",1,"U B U' F' U B' U' F"],["","p",1,"U F U' B' U F' U' B"],["","p",1,"U B U' F' U B' U' F"]],[["","e",1,"B U' B U B U B U' B' U' B2"],["","e",1,"R U' R U R U R U' R' U' R2"]]]},{"sc":"D2 L' R' U B' U2 F' R D F2 D' F' L2 D F' D U2 B F U' B U'","ph":[[["e:orange-yellow","d",1,"L'"],["e:yellow-blue","d",1,"R B"],["e:yellow-green","d",1,"R"],["e:red-yellow","d",1,"U' R2"],["","k",1,"R2"],["","u",1,"U"],["","k",1,"B2"],["","k",1,"L2"],["","u",1,"U"],["","k",1,"F2"]],[["c:orange-yellow-blue","u",1,"U2"],["","c",1,"B U B' U'"],["","c",1,"L U L' U'"],["c:orange-yellow-green","c",1,"R U R' U'"],["","u",1,"U"],["","c",1,"F U F' U'"],["c:red-yellow-blue","u",1,"U"],["","c",3,"B U B' U' B U B' U' B U B' U'"],["c:red-yellow-green","c",1,"R U R' U'"]],[["e:orange-blue","m-l",1,"U' B' U B U L U' L'"],["e:orange-green","u",1,"U"],["","m-r",1,"U F U' F' U' L' U L"],["e:red-blue","u",1,"U"],["","m-l",1,"U' R' U R U B U' B'"],["e:red-green","m-r",1,"U R U' R' U' F' U F"]],[["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","u",1,"U"],["","s",1,"R U R' U R U2 R'"],["","u",1,"U2"],["","s",1,"R U R' U R U2 R'"]],[["","u",1,"U'"]],[["","e",1,"F U' F U F U F U' F' U' F2"]]]},{"sc":"L' R2 B2 R U' R' D' F' D R B U F U L2 R' B' L F' L F' U2","ph":[[["e:yellow-blue","d",1,"L'"],["e:red-yellow","d",1,"U2 L'"],["","u",1,"U"],["","k",1,"L2"],["","u",1,"U"],["","k",1,"F2"],["","k",1,"R2"],["","u",1,"U"],["","k",1,"B2"]],[["c:orange-yellow-blue","c",2,"L U L' U' L U L' U'"],["c:orange-yellow-green","u",1,"U2"],["","c",1,"F U F' U'"],["c:red-yellow-blue","c",1,"R U R' U'"],["","u",1,"U'"],["","c",1,"B U B' U'"]],[["e:orange-blue","u",1,"U'"],["","m-r",1,"U L U' L' U' B' U B"],["e:orange-green","m-r",1,"U R U' R' U' F' U F"],["","u",1,"U'"],["","m-r",1,"U F U' F' U' L' U L"],["e:red-blue","m-l",1,"U' R' U R U B U' B'"]],[["","u",1,"U2"],["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","u",1,"U2"],["","s",3,"R U R' U R U2 R' R U R' U R U2 R' R U R' U R U2 R'"]],[["","p",1,"U R U' L' U R' U' L"],["","p",1,"U L U' R' U L' U' R"],["","p",1,"U R U' L' U R' U' L"],["","p",1,"U B U' F' U B' U' F"]],[["","e",2,"B U' B U B U B U' B' U' B2 B U' B U B U B U' B' U' B2"]]]},{"sc":"F2 U F2 U2 B F' D F2 D' U' B2 D B L' D2 B2 L U' B F' D U2","ph":[[["e:orange-yellow","d",1,"B'"],["e:yellow-blue","d",1,"F'"],["e:yellow-green","d",1,"U F'"],["e:red-yellow","d",1,"U R"],["","k",1,"R2"],["","k",1,"B2"],["","u",1,"U"],["","k",1,"L2"],["","u",1,"U2"],["","k",1,"F2"]],[["c:orange-yellow-blue","u",1,"U'"],["","c",1,"L U L' U'"],["c:orange-yellow-green","c",1,"B U B' U'"],["","u",1,"U2"],["","c",1,"F U F' U'"],["c:red-yellow-blue","u",1,"U'"],["","c",1,"R U R' U'"],["","c",1,"B U B' U'"],["c:red-yellow-green","u",1,"U'"],["","c",1,"R U R' U'"],["","u",1,"U"],["","c",1,"R U R' U'"]],[["e:orange-blue","u",1,"U"],["","m-l",1,"U' B' U B U L U' L'"],["e:orange-green","m-l",1,"U' L' U L U F U' F'"],["","u",1,"U2"],["","m-l",1,"U' L' U L U F U' F'"],["e:red-blue","u",1,"U'"],["","m-r",1,"U B U' B' U' R' U R"]],[["","y",1,"F R U R' U' F'"],["","u",1,"U2"],["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","u",1,"U'"],["","s",1,"R U R' U R U2 R'"]],[["","u",1,"U2"],["","p",1,"U L U' R' U L' U' R"],["","p",1,"U F U' B' U F' U' B"],["","p",1,"U B U' F' U B' U' F"],["","p",1,"U F U' B' U F' U' B"]],[["","e",1,"B U' B U B U B U' B' U' B2"],["","e",1,"R U' R U R U R U' R' U' R2"]]]},{"sc":"R' F R' F2 D2 R2 F2 L' F2 D' U B' U2 B F D' L2 F R B L2 U'","ph":[[["e:yellow-blue","d",1,"B"],["e:yellow-green","d",1,"U' R F'"],["e:red-yellow","d",1,"R U F'"],["","k",1,"B2"],["","u",1,"U'"],["","k",1,"F2"],["","k",1,"R2"],["","u",1,"U'"],["","k",1,"L2"]],[["c:orange-yellow-blue","u",1,"U'"],["","c",1,"L U L' U'"],["c:orange-yellow-green","u",1,"U"],["","c",1,"F U F' U'"],["c:red-yellow-blue","c",1,"R U R' U'"],["","c",1,"B U B' U'"],["c:red-yellow-green","c",2,"R U R' U' R U R' U'"]],[["e:orange-blue","u",1,"U2"],["","m-r",1,"U L U' L' U' B' U B"],["e:orange-green","u",1,"U2"],["","m-l",1,"U' L' U L U F U' F'"],["e:red-blue","m-r",1,"U R U' R' U' F' U F"],["","m-l",1,"U' R' U R U B U' B'"]],[["","y",1,"F R U R' U' F'"]],[["","u",1,"U2"],["","s",1,"R U R' U R U2 R'"]],[["","u",1,"U"],["","p",1,"U R U' L' U R' U' L"],["","p",1,"U L U' R' U L' U' R"],["","p",1,"U F U' B' U F' U' B"],["","p",1,"U B U' F' U B' U' F"]],[["","e",1,"F U' F U F U F U' F' U' F2"]]]},{"sc":"U F2 U L2 U' R' D' F' D F L' R2 F2 U' B' L F' U L2 U R' B2","ph":[[["e:orange-yellow","d",1,"R F'"],["e:yellow-blue","d",1,"R B"],["e:yellow-green","d",1,"L U B'"],["e:red-yellow","d",1,"U2 B2"],["","k",1,"F2"],["","u",1,"U"],["","k",1,"R2"],["","k",1,"B2"],["","u",1,"U"],["","k",1,"L2"]],[["c:orange-yellow-blue","c",1,"B U B' U'"],["","c",1,"L U L' U'"],["c:orange-yellow-green","c",1,"B U B' U'"],["","c",1,"F U F' U'"],["","u",1,"U"],["","c",1,"F U F' U'"],["c:red-yellow-blue","u",1,"U'"],["","c",1,"B U B' U'"]],[["e:orange-green","m-l",1,"U' L' U L U F U' F'"],["e:red-blue","m-r",1,"U R U' R' U' F' U F"],["","u",1,"U"],["","m-r",1,"U B U' B' U' R' U R"],["e:red-green","u",1,"U'"],["","m-l",1,"U' F' U F U R U' R'"]],[["","u",1,"U"],["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","u",1,"U'"],["","s",1,"R U R' U R U2 R'"],["","u",1,"U"],["","s",1,"R U R' U R U2 R'"]],[["","u",1,"U2"]],[["","e",1,"R U' R U R U R U' R' U' R2"],["","e",1,"B U' B U B U B U' B' U' B2"]]]},{"sc":"R' F' U2 F D' L2 R2 U' R2 F2 D F2 R B2 R' F' R' U L2 B2 F L","ph":[[["e:orange-yellow","d",1,"L'"],["e:yellow-green","d",1,"U L"],["e:red-yellow","d",1,"F'"],["","u",1,"U'"],["","k",1,"F2"],["","k",1,"R2"],["","k",1,"B2"],["","k",1,"L2"]],[["c:orange-yellow-blue","u",1,"U'"],["","c",1,"L U L' U'"],["c:orange-yellow-green","c",2,"F U F' U' F U F' U'"],["c:red-yellow-blue","u",1,"U'"],["","c",1,"R U R' U'"],["","c",1,"B U B' U'"],["c:red-yellow-green","u",1,"U'"],["","c",3,"R U R' U' R U R' U' R U R' U'"]],[["e:orange-green","u",1,"U2"],["","m-r",1,"U F U' F' U' L' U L"],["e:red-blue","u",1,"U"],["","m-r",1,"U B U' B' U' R' U R"],["e:red-green","u",1,"U'"],["","m-r",1,"U R U' R' U' F' U F"]],[["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","u",1,"U"],["","s",1,"R U R' U R U2 R'"],["","u",1,"U'"],["","s",3,"R U R' U R U2 R' R U R' U R U2 R' R U R' U R U2 R'"]],[["","u",1,"U'"]],[["","e",1,"R U' R U R U R U' R' U' R2"],["","e",1,"B U' B U B U B U' B' U' B2"]]]},{"sc":"D2 B2 R' B2 L2 U' R' D' U F' R F L2 R' B' U B' D' F2 U2 L' U","ph":[[["e:orange-yellow","d",1,"B'"],["e:yellow-blue","d",1,"U B2"],["e:yellow-green","d",1,"F"],["e:red-yellow","d",1,"U B"],["","u",1,"U"],["","k",1,"R2"],["","k",1,"L2"],["","u",1,"U2"],["","k",1,"F2"],["","k",1,"B2"]],[["c:orange-yellow-blue","c",1,"B U B' U'"],["","c",1,"L U L' U'"],["c:orange-yellow-green","u",1,"U2"],["","c",1,"F U F' U'"],["c:red-yellow-blue","u",1,"U'"],["","c",1,"R U R' U'"],["","c",1,"B U B' U'"],["c:red-yellow-green","u",1,"U"],["","c",1,"R U R' U'"],["","u",1,"U"],["","c",1,"R U R' U'"]],[["e:orange-blue","u",1,"U"],["","m-l",1,"U' B' U B U L U' L'"],["e:orange-green","u",1,"U2"],["","m-r",1,"U F U' F' U' L' U L"],["e:red-blue","u",1,"U2"],["","m-r",1,"U B U' B' U' R' U R"]],[["","y",1,"F R U R' U' F'"],["","u",1,"U2"],["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","u",1,"U"],["","s",2,"R U R' U R U2 R' R U R' U R U2 R'"]],[["","p",1,"U R U' L' U R' U' L"],["","p",1,"U B U' F' U B' U' F"],["","p",1,"U F U' B' U F' U' B"],["","p",1,"U B U' F' U B' U' F"]],[["","e",2,"L U' L U L U L U' L' U' L2 L U' L U L U L U' L' U' L2"]]]},{"sc":"U' R U2 B' F L2 U' F2 R2 B2 R2 F U' L2 U R' B U2 R F' U2 F'","ph":[[["e:orange-yellow","d",1,"B2"],["e:yellow-blue","d",1,"F'"],["e:yellow-green","d",1,"U F"],["e:red-yellow","d",1,"B U R'"],["","k",1,"R2"],["","k",1,"B2"],["","u",1,"U"],["","k",1,"L2"],["","u",1,"U2"],["","k",1,"F2"]],[["c:orange-yellow-blue","u",1,"U'"],["","c",1,"L U L' U'"],["c:orange-yellow-green","c",1,"B U B' U'"],["","u",1,"U2"],["","c",3,"F U F' U' F U F' U' F U F' U'"],["c:red-yellow-blue","u",1,"U2"],["","c",1,"R U R' U'"],["","c",1,"B U B' U'"],["c:red-yellow-green","u",1,"U"],["","c",1,"R U R' U'"]],[["e:orange-green","u",1,"U"],["","m-l",1,"U' L' U L U F U' F'"],["e:red-blue","m-r",1,"U R U' R' U' F' U F"],["","m-l",1,"U' R' U R U B U' B'"],["e:red-green","u",1,"U"],["","m-l",1,"U' F' U F U R U' R'"]],[["","u",1,"U2"],["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","u",1,"U'"],["","s",3,"R U R' U R U2 R' R U R' U R U2 R' R U R' U R U2 R'"]],[["","u",1,"U'"],["","p",1,"U B U' F' U B' U' F"],["","p",1,"U L U' R' U L' U' R"],["","p",1,"U R U' L' U R' U' L"],["","p",1,"U L U' R' U L' U' R"]],[["","e",1,"B U' B U B U B U' B' U' B2"],["","e",1,"R U' R U R U R U' R' U' R2"]]]},{"sc":"L' B2 L' D' B R U' F' D' F2 L2 F U2 L D B F2 D U' F2 U L'","ph":[[["e:orange-yellow","d",1,"B2"],["e:yellow-blue","d",1,"L' F"],["e:yellow-green","d",1,"R'"],["e:red-yellow","d",1,"L'"],["","u",1,"U"],["","k",1,"F2"],["","u",1,"U"],["","k",1,"R2"],["","k",1,"B2"],["","u",1,"U"],["","k",1,"L2"]],[["c:orange-yellow-blue","c",2,"L U L' U' L U L' U'"],["c:orange-yellow-green","c",1,"B U B' U'"],["","u",1,"U2"],["","c",1,"F U F' U'"],["c:red-yellow-blue","u",1,"U"],["","c",1,"B U B' U'"],["","c",1,"R U R' U'"],["","c",1,"B U B' U'"],["c:red-yellow-green","u",1,"U'"],["","c",1,"R U R' U'"]],[["e:orange-blue","u",1,"U2"],["","m-r",1,"U L U' L' U' B' U B"],["e:orange-green","u",1,"U2"],["","m-l",1,"U' L' U L U F U' F'"],["e:red-blue","u",1,"U"],["","m-r",1,"U B U' B' U' R' U R"]],[["","y",1,"F R U R' U' F'"],["","u",1,"U2"],["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","u",1,"U"],["","s",1,"R U R' U R U2 R'"],["","u",1,"U2"],["","s",1,"R U R' U R U2 R'"]],[["","u",1,"U"],["","p",1,"U B U' F' U B' U' F"],["","p",1,"U L U' R' U L' U' R"],["","p",1,"U R U' L' U R' U' L"],["","p",1,"U L U' R' U L' U' R"]],[["","e",1,"R U' R U R U R U' R' U' R2"],["","e",1,"F U' F U F U F U' F' U' F2"]]]},{"sc":"B' D L' D2 L2 U2 R F L R2 U' B2 R B' F D L2 D2 L B' R' D2","ph":[[["e:orange-yellow","d",1,"F2"],["e:yellow-blue","d",1,"L' B'"],["e:red-yellow","d",1,"U2 L2"],["","u",1,"U"],["","k",1,"F2"],["","u",1,"U"],["","k",1,"R2"],["","k",1,"B2"],["","u",1,"U"],["","k",1,"L2"]],[["c:orange-yellow-blue","c",3,"L U L' U' L U L' U' L U L' U'"],["c:orange-yellow-green","c",1,"F U F' U'"],["c:red-yellow-blue","u",1,"U2"],["","c",1,"R U R' U'"],["","c",1,"B U B' U'"],["c:red-yellow-green","u",1,"U2"],["","c",1,"R U R' U'"]],[["e:orange-blue","u",1,"U'"],["","m-l",1,"U' B' U B U L U' L'"],["e:orange-green","m-l",1,"U' L' U L U F U' F'"],["e:red-blue","u",1,"U"],["","m-l",1,"U' R' U R U B U' B'"],["e:red-green","m-l",1,"U' F' U F U R U' R'"]],[["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","s",1,"R U R' U R U2 R'"],["","u",1,"U'"],["","s",1,"R U R' U R U2 R'"]],[["","p",1,"U R U' L' U R' U' L"],["","p",1,"U L U' R' U L' U' R"],["","p",1,"U R U' L' U R' U' L"],["","p",1,"U B U' F' U B' U' F"]],[["","e",1,"L U' L U L U L U' L' U' L2"]]]},{"sc":"B F2 D2 R B2 U' F' D L U2 F' D2 L2 B2 D' B2 U' L2 U' R2 U2 F'","ph":[[["e:orange-yellow","d",1,"L F"],["e:yellow-blue","d",1,"B L"],["e:yellow-green","d",1,"B R'"],["e:red-yellow","d",1,"B'"],["","u",1,"U"],["","k",1,"F2"],["","k",1,"R2"],["","k",1,"B2"],["","k",1,"L2"]],[["c:orange-yellow-blue","u",1,"U"],["","c",1,"L U L' U'"],["c:orange-yellow-green","c",1,"B U B' U'"],["","u",1,"U2"],["","c",3,"F U F' U' F U F' U' F U F' U'"],["c:red-yellow-blue","u",1,"U"],["","c",1,"R U R' U'"],["","c",1,"B U B' U'"]],[["e:orange-blue","m-r",1,"U B U' B' U' R' U R"],["","u",1,"U"],["","m-r",1,"U L U' L' U' B' U B"],["e:orange-green","u",1,"U'"],["","m-l",1,"U' L' U L U F U' F'"],["e:red-blue","m-l",1,"U' R' U R U B U' B'"]],[["","u",1,"U"],["","y",1,"F R U R' U' F'"]],[["","s",1,"R U R' U R U2 R'"],["","u",1,"U"],["","s",3,"R U R' U R U2 R' R U R' U R U2 R' R U R' U R U2 R'"]],[["","u",1,"U'"],["","p",1,"U R U' L' U R' U' L"],["","p",1,"U L U' R' U L' U' R"],["","p",1,"U R U' L' U R' U' L"],["","p",1,"U B U' F' U B' U' F"]],[["","e",2,"R U' R U R U R U' R' U' R2 R U' R U R U R U' R' U' R2"]]]},{"sc":"U R2 F2 R' D' B2 R' F D2 B R2 F' R' D' B R' D2 F D2 L B2 U'","ph":[[["e:orange-yellow","d",1,"L B'"],["e:yellow-green","d",1,"L'"],["e:red-yellow","d",1,"R'"],["","k",1,"R2"],["","u",1,"U'"],["","k",1,"F2"],["","k",1,"L2"],["","u",1,"U'"],["","k",1,"B2"]],[["c:orange-yellow-blue","c",2,"L U L' U' L U L' U'"],["c:orange-yellow-green","u",1,"U'"],["","c",1,"F U F' U'"],["c:red-yellow-blue","u",1,"U"],["","c",1,"B U B' U'"]],[["e:orange-blue","u",1,"U"],["","m-l",1,"U' B' U B U L U' L'"],["e:orange-green","u",1,"U"],["","m-r",1,"U F U' F' U' L' U L"],["e:red-blue","u",1,"U'"],["","m-l",1,"U' R' U R U B U' B'"],["e:red-green","u",1,"U"],["","m-l",1,"U' F' U F U R U' R'"]],[["","u",1,"U'"],["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","u",1,"U"],["","s",3,"R U R' U R U2 R' R U R' U R U2 R' R U R' U R U2 R'"]],[["","p",1,"U R U' L' U R' U' L"],["","p",1,"U L U' R' U L' U' R"],["","p",1,"U R U' L' U R' U' L"],["","p",1,"U B U' F' U B' U' F"]],[["","e",1,"R U' R U R U R U' R' U' R2"],["","e",1,"F U' F U F U F U' F' U' F2"]]]},{"sc":"L R2 F R' F L2 B R F2 U' R2 D2 B L' U2 R U2 B2 L' R2 D2 L","ph":[[["e:orange-yellow","d",1,"F L'"],["e:yellow-blue","d",1,"U L' F"],["e:yellow-green","d",1,"R"],["e:red-yellow","d",1,"L"],["","u",1,"U"],["","k",1,"F2"],["","u",1,"U"],["","k",1,"R2"],["","k",1,"B2"],["","u",1,"U"],["","k",1,"L2"]],[["c:orange-yellow-blue","c",1,"B U B' U'"],["","c",1,"L U L' U'"],["c:red-yellow-blue","u",1,"U2"],["","c",1,"R U R' U'"],["","c",1,"B U B' U'"],["c:red-yellow-green","u",1,"U2"],["","c",3,"R U R' U' R U R' U' R U R' U'"]],[["e:orange-green","m-r",1,"U R U' R' U' F' U F"],["","u",1,"U'"],["","m-r",1,"U F U' F' U' L' U L"],["e:red-green","u",1,"U'"],["","m-r",1,"U R U' R' U' F' U F"]],[["","u",1,"U'"],["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","s",1,"R U R' U R U2 R'"],["","u",1,"U"],["","s",1,"R U R' U R U2 R'"]],[["","u",1,"U2"],["","p",1,"U B U' F' U B' U' F"],["","p",1,"U L U' R' U L' U' R"],["","p",1,"U R U' L' U R' U' L"],["","p",1,"U L U' R' U L' U' R"]],[["","e",1,"B U' B U B U B U' B' U' B2"],["","e",1,"R U' R U R U R U' R' U' R2"]]]},{"sc":"R' F R' F2 D2 R2 F2 L' F2 D' U B' U2 B F D' L2 F R B L2 U'","ph":[[["e:yellow-blue","d",1,"B"],["e:yellow-green","d",1,"U' R F'"],["e:red-yellow","d",1,"R U F'"],["","k",1,"B2"],["","u",1,"U'"],["","k",1,"F2"],["","k",1,"R2"],["","u",1,"U'"],["","k",1,"L2"]],[["c:orange-yellow-blue","u",1,"U'"],["","c",1,"L U L' U'"],["c:orange-yellow-green","u",1,"U"],["","c",1,"F U F' U'"],["c:red-yellow-blue","c",1,"R U R' U'"],["","c",1,"B U B' U'"],["c:red-yellow-green","c",2,"R U R' U' R U R' U'"]],[["e:orange-blue","u",1,"U2"],["","m-r",1,"U L U' L' U' B' U B"],["e:orange-green","u",1,"U2"],["","m-l",1,"U' L' U L U F U' F'"],["e:red-blue","m-r",1,"U R U' R' U' F' U F"],["","m-l",1,"U' R' U R U B U' B'"]],[["","y",1,"F R U R' U' F'"]],[["","u",1,"U2"],["","s",1,"R U R' U R U2 R'"]],[["","u",1,"U"],["","p",1,"U R U' L' U R' U' L"],["","p",1,"U L U' R' U L' U' R"],["","p",1,"U F U' B' U F' U' B"],["","p",1,"U B U' F' U B' U' F"]],[["","e",1,"F U' F U F U F U' F' U' F2"]]]},{"sc":"U F2 U L2 U' R' D' F' D F L' R2 F2 U' B' L F' U L2 U R' B2","ph":[[["e:orange-yellow","d",1,"R F'"],["e:yellow-blue","d",1,"R B"],["e:yellow-green","d",1,"L U B'"],["e:red-yellow","d",1,"U2 B2"],["","k",1,"F2"],["","u",1,"U"],["","k",1,"R2"],["","k",1,"B2"],["","u",1,"U"],["","k",1,"L2"]],[["c:orange-yellow-blue","c",1,"B U B' U'"],["","c",1,"L U L' U'"],["c:orange-yellow-green","c",1,"B U B' U'"],["","c",1,"F U F' U'"],["","u",1,"U"],["","c",1,"F U F' U'"],["c:red-yellow-blue","u",1,"U'"],["","c",1,"B U B' U'"]],[["e:orange-green","m-l",1,"U' L' U L U F U' F'"],["e:red-blue","m-r",1,"U R U' R' U' F' U F"],["","u",1,"U"],["","m-r",1,"U B U' B' U' R' U R"],["e:red-green","u",1,"U'"],["","m-l",1,"U' F' U F U R U' R'"]],[["","u",1,"U"],["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","u",1,"U'"],["","s",1,"R U R' U R U2 R'"],["","u",1,"U"],["","s",1,"R U R' U R U2 R'"]],[["","u",1,"U2"]],[["","e",1,"R U' R U R U R U' R' U' R2"],["","e",1,"B U' B U B U B U' B' U' B2"]]]},{"sc":"R' F' U2 F D' L2 R2 U' R2 F2 D F2 R B2 R' F' R' U L2 B2 F L","ph":[[["e:orange-yellow","d",1,"L'"],["e:yellow-green","d",1,"U L"],["e:red-yellow","d",1,"F'"],["","u",1,"U'"],["","k",1,"F2"],["","k",1,"R2"],["","k",1,"B2"],["","k",1,"L2"]],[["c:orange-yellow-blue","u",1,"U'"],["","c",1,"L U L' U'"],["c:orange-yellow-green","c",2,"F U F' U' F U F' U'"],["c:red-yellow-blue","u",1,"U'"],["","c",1,"R U R' U'"],["","c",1,"B U B' U'"],["c:red-yellow-green","u",1,"U'"],["","c",3,"R U R' U' R U R' U' R U R' U'"]],[["e:orange-green","u",1,"U2"],["","m-r",1,"U F U' F' U' L' U L"],["e:red-blue","u",1,"U"],["","m-r",1,"U B U' B' U' R' U R"],["e:red-green","u",1,"U'"],["","m-r",1,"U R U' R' U' F' U F"]],[["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","u",1,"U"],["","s",1,"R U R' U R U2 R'"],["","u",1,"U'"],["","s",3,"R U R' U R U2 R' R U R' U R U2 R' R U R' U R U2 R'"]],[["","u",1,"U'"]],[["","e",1,"R U' R U R U R U' R' U' R2"],["","e",1,"B U' B U B U B U' B' U' B2"]]]},{"sc":"D2 B2 R' B2 L2 U' R' D' U F' R F L2 R' B' U B' D' F2 U2 L' U","ph":[[["e:orange-yellow","d",1,"B'"],["e:yellow-blue","d",1,"U B2"],["e:yellow-green","d",1,"F"],["e:red-yellow","d",1,"U B"],["","u",1,"U"],["","k",1,"R2"],["","k",1,"L2"],["","u",1,"U2"],["","k",1,"F2"],["","k",1,"B2"]],[["c:orange-yellow-blue","c",1,"B U B' U'"],["","c",1,"L U L' U'"],["c:orange-yellow-green","u",1,"U2"],["","c",1,"F U F' U'"],["c:red-yellow-blue","u",1,"U'"],["","c",1,"R U R' U'"],["","c",1,"B U B' U'"],["c:red-yellow-green","u",1,"U"],["","c",1,"R U R' U'"],["","u",1,"U"],["","c",1,"R U R' U'"]],[["e:orange-blue","u",1,"U"],["","m-l",1,"U' B' U B U L U' L'"],["e:orange-green","u",1,"U2"],["","m-r",1,"U F U' F' U' L' U L"],["e:red-blue","u",1,"U2"],["","m-r",1,"U B U' B' U' R' U R"]],[["","y",1,"F R U R' U' F'"],["","u",1,"U2"],["","y",2,"F R U R' U' F' F R U R' U' F'"]],[["","u",1,"U"],["","s",2,"R U R' U R U2 R' R U R' U R U2 R'"]],[["","p",1,"U R U' L' U R' U' L"],["","p",1,"U B U' F' U B' U' F"],["","p",1,"U F U' B' U F' U' B"],["","p",1,"U B U' F' U B' U' F"]],[["","e",2,"L U' L U L U L U' L' U' L2 L U' L U L U L U' L' U' L2"]]]}];
+function newDemo(){let d;do d=POOL[Math.floor(Math.random()*POOL.length)];while(d.sc===DEMO.sc);return d;}
+const dst=PH.map(()=>({n:0}));
+function initPH(){
+  $('#phases').innerHTML=PH.map(()=>'<details class="ph"><summary><span class="n"></span><b></b><span></span>'+CH+'</summary><div class="dc"><div class="ptxt"></div><div class="demo"><div class="scene pscene"></div><div class="eq g3"></div><div class="dcap"><b></b><div class="dhist"></div></div></div><details class="tip"><summary><b></b>'+CH+'</summary><div class="tipb"></div></details></div></details>').join('');
+  $$('#phases>details').forEach((d,i)=>{const sc=Scene($('.pscene',d),{init:demoInit(i),view:null});dst[i].sc=sc;
+    const bs=$('.eq',d),b1=mkBtn('','pri',()=>{const S=DEMO.ph[i];if(dst[i].n>=S.length)return;sc.seq(tk(S[dst[i].n][3]));dst[i].n++;drawDemo(i);}),b2=mkBtn('','',()=>{sc.reset();dst[i].n=0;drawDemo(i);});
+    const b3=mkBtn('','',()=>{DEMO=newDemo();dst.forEach((s,j)=>{s.sc.reset();s.n=0;drawDemo(j);});});
+    bs.append(b1,b2,b3);dst[i].b1=b1;dst[i].b2=b2;dst[i].b3=b3;});
+}
+function drawDemo(i){const d=$$('#phases>details')[i],S=DEMO.ph[i],n=dst[i].n,st=dst[i];
+  st.b1.textContent=L('Stap +1','Step +1');st.b2.textContent=L('Herstel','Reset');st.b3.textContent=L('Hussel','Shuffle');st.b1.disabled=n>=S.length;
+  const c=$('.dcap',d);
+  if(!n){$('b',c).textContent=L('Een willekeurige kubus. Tik op Stap +1.','A random cube. Tap Step +1.');$('.dhist',c).innerHTML='';}
+  else{$('b',c).textContent=L('Stap ','Step ')+n+L(' van ',' of ')+S.length+' · '+stepLab(S[n-1])+(n>=S.length?'. '+L('Klaar.','Done.'):'');
+    $('.dhist',c).innerHTML=S.slice(0,n).map((s,k)=>'<div><span class="hn">'+(k+1)+'</span><span class="hk">'+s[3]+'</span></div>').join('');}}
+function drawPH(){
+  const SN=$('#s5 .n').textContent;
+  $$('#phases>details').forEach((d,i)=>{const p=PH[i],m=L(p[0][0],p[0][1]).match(/^(\d+)\s+(.*)$/);$(':scope>summary>.n',d).textContent=SN+'.'+m[1];$(':scope>summary>b',d).textContent=m[2];$(':scope>summary>span:not(.n)',d).textContent=L(p[1][0],p[1][1]);
+    $('.ptxt',d).innerHTML='<p class="small">'+L(p[2][0],p[2][1])+'</p>';
+    $('.tip summary b',d).textContent=L('Stappenplan en tips','Step plan and tips');
+    $('.tipb',d).innerHTML='<ul class="stp plain">'+p[3].map(x=>'<li>'+L(x[0],x[1])+'</li>').join('')+'</ul><p class="small"><b>'+L('Houd je werk heel.','Keep your work safe.')+'</b> '+L(p[4][0],p[4][1])+'</p>';
+    drawDemo(i);});
+}
+initPH();
+const updPh=accord($$('#phases>details'),$('#expph'),true);
+const s5=Scene($('#sc5'));let c5=0;
+const ALG=['R','U',"R'","U'"];
+const play=n=>{for(let i=0;i<n;i++)s5.seq(ALG);c5+=n;$('#n5').textContent=c5;};
+$('#play1').onclick=()=>play(1);$('#play6').onclick=()=>play(6);
+$('#reset5').onclick=()=>{s5.reset();c5=0;$('#n5').textContent=0;};
+
+/* ---- Oefenen ---- */
+let selD=null;
+const sct=Scene($('#sct'),{onPick:f=>{if(game==='do'&&!ans){selD=f;sct.sel(f);if(kindD)checkDo();else drawQ();}}});
+let game='move',rounds=5,qi=0,score=0,streak=0,best=0,ans=false,cur_q=null,fbS=null,lastQ=false;
+const GAMES=[['move',['Welke zet?','Which move?'],['Kijk naar de draai en kies de juiste notatie.','Watch the turn and pick the right notation.']],['do',['Doe de zet','Make the move'],['Je krijgt een zet. Draai hem zelf op de kubus.','You get a move. Make it yourself on the cube.']],['mean',['Wat betekent het?','What does it mean?'],['Je krijgt een zet. Kies welke zijde en welke draai dat is.','You get a move. Pick which side and which turn it is.']],['undo',['Terugdraaien','Undo it'],['Lees de reeks en kies wat alles ongedaan maakt.','Read the sequence and pick what undoes it all.']]];
+const RO=[5,10];
+function drawSetup(){
+  const gc=$('#game-chips');gc.innerHTML='';
+  GAMES.forEach(g=>gc.appendChild(mkBtn(L(g[1][0],g[1][1]),g[0]===game?'pri':'',()=>{game=g[0];drawSetup();})));
+  const g=GAMES.find(g=>g[0]===game);$('#game-hint').textContent=L(g[2][0],g[2][1]);
+  const rc=$('#round-chips');rc.innerHTML='';
+  RO.forEach(r=>rc.appendChild(mkBtn(r+L(' vragen',' questions'),r===rounds?'pri':'',()=>{rounds=r;drawSetup();})));
+}
+const panels=['setup','play','result'];
+const showP=p=>panels.forEach(x=>$('#'+x).classList.toggle('hidden',x!==p));
+function randSeq(n){const a=[];let lf='';while(a.length<n){const f=pick([...FACES].filter(x=>x!==lf));lf=f;a.push(f+pick(KINDS));}return a;}
+function options(correct,wrongs){const set=[correct];for(const w of wrongs){if(!set.includes(w))set.push(w);}return shuffle(set.slice(0,4));}
+let Qs=[];
+function navRow(){
+  const qn=$('#qnext');qn.innerHTML='';const pend=ans&&!shown;
+  const pv=mkBtn(L('Vorige','Previous'),'',()=>showQ(qi-1));pv.disabled=qi===0||pend;
+  const rp=mkBtn(L('Opnieuw','Replay'),'',playAns);rp.disabled=!(shown||game==='move');
+  const nx=mkBtn(lastQ?L('Uitslag','Result'):L('Volgende','Next'),shown?'pri':'',()=>{if(lastQ)finish();else if(qi+1<Qs.length)showQ(qi+1);else newQ();});nx.disabled=!shown;
+  qn.append(pv,rp,nx);
+}
+function drawQ(){
+  if(!cur_q)return;
+  $('#status').innerHTML='<span>'+L('vraag','question')+' <b>'+(qi+1)+'</b> '+L('van','of')+' <b>'+rounds+'</b></span><span>'+L('goed','correct')+' <b>'+score+'</b></span>'+(streak>=2?'<span>'+L('op rij','in a row')+' <b>'+streak+'</b></span>':'');
+  $('#qtext').innerHTML=game==='move'?L('Welke zet zie je?','Which move do you see?'):game==='do'?L('Draai de <b>'+FN[cur_q.correct[0]][1].replace(/^voor$/,'voor').replace(/^(.*)$/,x=>({boven:'bovenzijde',onder:'onderzijde',links:'linkerzijde',rechts:'rechterzijde',voor:'voorzijde',achter:'achterzijde'})[x])+'</b>: <b>'+KN[cur_q.correct.slice(1)][0]+'</b>. Tik op die zijde en kies de draai.','Turn the <b>'+FN[cur_q.correct[0]][2]+'</b> side: <b>'+KN[cur_q.correct.slice(1)][1]+'</b>. Tap that side and pick the turn.'):game==='mean'?L('Wat betekent <b>'+cur_q.token+'</b>?','What does <b>'+cur_q.token+'</b> mean?'):L('Gedraaid met <b class="k" style="font-family:var(--font-mono)">'+cur_q.sc.join(' ')+'</b>. Welke reeks maakt dat ongedaan?','Turned with <b class="k" style="font-family:var(--font-mono)">'+cur_q.sc.join(' ')+'</b>. Which sequence undoes that?');
+  navRow();
+}
+function newQ(){
+  let correct,opts=null,sc=null,after=null,tokQ=null;
+  if(game==='move'){
+    correct=pick(ALL);const wr=shuffle(ALL.filter(x=>x!==correct));
+    const sameF=wr.filter(x=>x[0]===correct[0]),sameK=wr.filter(x=>x.slice(1)===correct.slice(1));
+    opts=options(correct,[sameF[0],sameK[0],...wr]);
+  }else if(game==='do'){
+    correct=pick(ALL);
+  }else if(game==='mean'){
+    const t=pick(ALL),mt=x=>L(FN[x[0]][1],FN[x[0]][2])+', '+L(KN[x.slice(1)][0],KN[x.slice(1)][1]);
+    correct=mt(t);const wr=ALL.filter(x=>x!==t);
+    const sf=shuffle(wr.filter(x=>x[0]===t[0]))[0],sk=shuffle(wr.filter(x=>x.slice(1)===t.slice(1)))[0];
+    opts=options(correct,[mt(sf),mt(sk),...shuffle(wr).map(mt)]);after=[t];tokQ=t;
+  }else{
+    sc=randSeq(3);correct=invSeq(sc).join(' ');
+    const w1=sc.slice().reverse().join(' '),w2=sc.map(inv).join(' ');
+    const alt=invSeq(sc);alt[0]=pick([...FACES].filter(f=>f!==alt[0][0]))+alt[0].slice(1);
+    opts=options(correct,[w1,w2,alt.join(' '),randSeq(3).join(' '),sc.join(' ')]);after=invSeq(sc);
+  }
+  Qs.push({correct,sc,after,token:tokQ,opts,chosen:null,kindD:''});showQ(Qs.length-1);
+}
+function showQ(i){
+  qi=i;const r=Qs[i];cur_q=r;ans=!!r.chosen;shown=false;fbS=null;lastQ=i+1>=rounds;
+  const qb=$('#qbody');qb.innerHTML='';qb.style.cssText='';
+  sct.reset();sct.sel(null);selD=null;kindD=r.kindD;
+  if(game==='undo')sct.instant(r.sc);
+  if(game==='move'&&!ans)setTimeout(()=>{if(cur_q===r)sct.move(r.correct);},350);
+  if(game==='do'){drawDo();if(ans){const btns=$$('button',qb);sct.sel(r.correct[0]);reveal(btns,b=>b.dataset.v===r.correct.slice(1),b=>b.dataset.v===r.kindD);}return;}
+  const g=document.createElement('div');g.className=game==='mean'?'eq':'eq g2';
+  r.opts.forEach(o=>{const b=mkOpt(o,'',()=>answer(o,g));b.dataset.v=o;g.appendChild(b);});
+  qb.appendChild(g);
+  if(ans)reveal($$('button',g),b=>b.dataset.v===r.correct,b=>b.dataset.v===r.chosen);else drawQ();
+}
+const reward=ok=>{streak=ok?streak+1:0;best=Math.max(best,streak);};
+let kindD='';
+const mkOpt=(txt,cl,fn)=>mkBtn(txt,'opt '+(cl||''),fn);
+let shown=false;
+const GLINT=800;
+function playAns(){
+  if(game==='undo'){sct.reset();sct.instant(cur_q.sc);setTimeout(()=>sct.seq(cur_q.after),250);}
+  else{sct.sel(null);sct.reset();const t=game==='mean'?cur_q.token:cur_q.correct;setTimeout(()=>sct.move(t),250);}
+}
+function glint(btns){btns.forEach(b=>{b.disabled=true;b.style.opacity=1;b.style.animationDelay=(Math.random()*.4).toFixed(2)+'s';b.classList.add('glint');});}
+function reveal(btns,isCorrect,wasChosen){
+  btns.forEach(b=>{b.classList.remove('sel','pri','glint');b.style.animationDelay='';b.disabled=true;b.style.opacity=1;if(isCorrect(b))b.classList.add('good');else if(wasChosen(b))b.classList.add('wrong');});
+  shown=true;drawQ();
+}
+function drawDo(){
+  const qb=$('#qbody');qb.innerHTML='';qb.style.cssText='display:grid;gap:8px';
+  const kr=document.createElement('div');kr.className='eq g3';
+  KL.forEach(k=>{const b=mkOpt(L(k[0][0],k[0][1]),k[1]===kindD?'pri':'',()=>{if(ans)return;kindD=k[1];if(selD)checkDo();else drawDo();});b.dataset.v=k[1];kr.appendChild(b);});
+  qb.append(kr);drawQ();
+}
+function checkDo(){
+  if(ans||!selD)return;ans=true;const r=cur_q,t=selD+kindD,ok=t===r.correct;if(ok)score++;reward(ok);
+  r.chosen=t;r.kindD=kindD;
+  const ck=r.correct.slice(1),btns=$$('button',$('#qbody'));
+  btns.forEach(b=>{b.classList.remove('pri');if(b.dataset.v===kindD)b.classList.add('sel');});
+  glint(btns);drawQ();
+  setTimeout(()=>{if(cur_q!==r)return;sct.sel(r.correct[0]);reveal(btns,b=>b.dataset.v===ck,b=>b.dataset.v===kindD);},GLINT);
+}
+function answer(o,g){
+  if(ans)return;ans=true;const r=cur_q;r.chosen=o;
+  const ok=o===r.correct;if(ok)score++;reward(ok);
+  const btns=$$('button',g);
+  btns.forEach(b=>{if(b.dataset.v===o)b.classList.add('sel');});
+  glint(btns);drawQ();
+  setTimeout(()=>{if(cur_q!==r)return;reveal(btns,b=>b.dataset.v===r.correct,b=>b.dataset.v===o);},GLINT);
+}
+function finish(){
+  showP('result');drawResult();
+}
+function drawResult(){
+  $('#score').textContent=score+L(' van ',' of ')+rounds;
+  $('#rtext').textContent=(best>=2?L('Langste reeks goed: ','Longest streak: ')+best+'. ':'')+(score===rounds?L('Foutloos.','Flawless.'):score/rounds>=.6?L('Mooi gedaan.','Well done.'):L('Nog een keer oefenen helpt.','Another round of practice helps.'));
+}
+$('#start').onclick=()=>{setLet(LDEF);Qs=[];qi=0;score=0;streak=0;best=0;showP('play');newQ();};
+$('#stop').onclick=()=>{cur_q=null;ans=false;showP('setup');};
+$('#lettersT').onclick=e=>{const on=e.currentTarget.getAttribute('aria-checked')!=='true';e.currentTarget.setAttribute('aria-checked',on);sct.letters(on);};
+$('#again').onclick=()=>{cur_q=null;showP('setup');};
+
+/* ---- taal toepassen ---- */
+function applyLang(){
+  document.documentElement.lang=LANG;
+  document.title=L('Het raadsel van de kubus','The riddle of the cube');
+  STATIC.forEach(([e,nl])=>{e.innerHTML=LANG==='en'?EN[nl]:nl;});
+  const lb=$('#lang');lb.textContent=LANG==='en'?'NL':'EN';lb.setAttribute('aria-label',LANG==='en'?'Overschakelen naar Nederlands':'Switch to English');
+  $('#about-x').setAttribute('aria-label',L('Sluiten','Close'));$('#set-x').setAttribute('aria-label',L('Sluiten','Close'));$('#gear').setAttribute('aria-label',L('Instellingen','Settings'));lD.setAttribute('aria-label',L('Letters standaard tonen','Show letters by default'));drawViews();ab.setAttribute('aria-label',L('Over deze pagina','About this page'));$('#theme').setAttribute('aria-label',L('Donker of licht','Dark or light'));
+  $('#letters2').setAttribute('aria-label',L('Letters op de kubus','Letters on the cube'));$('#lettersT').setAttribute('aria-label',L('Letters op de kubus','Letters on the cube'));
+  $('#sci').setAttribute('aria-label',L('Wetenschappelijke notatie','Scientific notation'));
+  $('#nr').setAttribute('aria-label',L('Aantal zetten','Number of moves'));
+  updExp();updPh();updX();setHints();drawHL();drawLegend();drawPad();drawMean();drawN0();drawSq();draw3();draw4();drawG();drawPH();drawSetup();drawQ();drawX();drawC();
+  if(!$('#result').classList.contains('hidden'))drawResult();
+}
+
+const POOL20=["F2 L U' D' B2 D F' L' F' R F' R L2 D2 L2 B2 U' D", "D L2 U' B R2 L2 B' R' B' R U L B2 R2 F2 D F2 D2 L2 U'", "R' L2 F2 D B L F2 D2 B L F L' U B2 R2 L2 D' B2 D", "U' R F2 L B D2 R2 F' R2 L' U2 B L2 D2 B2 U R2 L2 U D", "B D R2 F B' L' F D F U2 F2 B2 U L2 D2 L2 D B2 L2 U'", "D2 B D' L' B R' D2 B' U' R B2 D2 L' B2 U' D B2 D R2 D2", "R' U2 B2 R F R' D' L2 U2 F2 B R' U D2 F2 U' B2 L2 U2 D", "R' F2 R2 U' L' F2 L' F' B U F' R U B2 D L2 B2 D' L2 D2", "B2 D2 R' U' F2 U L' F' L' B' R' F R2 U2 F2 D2 B2 D2 R2 D", "F D2 L' B' U' L F' R2 B' U2 R' D R2 U B2 D' B2 L2 U R2", "F B2 U2 L2 D2 F U B2 R' D L B' R' F D' B2 D L2 D' R2", "F R D2 F' L F U R B2 R' U' B2 L2 U2 F2 U L2 B2 R2", "F U' B2 D2 F B R2 U' F' U2 R' L B D F2 U2 D' B2 R2 D'", "D' R' U2 F' L' F2 D L' U' R2 U F' L' B2 D B2 R2 F2 D2 L2", "R2 L' F2 B R U F2 D' L' D' B L2 D F2 U2 B2 D' R2 D R2", "R B2 D2 B2 R' U2 R' U' F R L F2 B' L2 D2 F2 U B2 L2 D2", "R' L F U2 D' R U L F' U' B' L2 D' B2 R2 U' B2 U L2 B2", "F2 D' R' B2 L2 F' B' R' B' L2 F L2 F2 L2 U' B2 U' F2 D F2", "L F' R2 B2 U B' D' F2 D F2 R D' B' D2 B2 D R2 U R2", "R D L B2 U' B R' F' B' D R F2 U F2 U2 D' R2 U L2 B2", "U R' U2 R F2 B' R' L' U2 D' F D2 L2 D' R2 B2 R2 D R2 D'", "R2 B2 R2 B R' F' U F2 D2 R2 L' D' F U2 R2 U' F2 B2 D' L2", "F' D F2 L D2 L B U B2 R' L2 U' F2 U D F2 B2 D' L2 F2", "L' D' F' U2 L B2 D' R B R L F B2 R2 D' B2 D' B2 L2 U2", "F' D F' L D L U' L B' U' R2 U2 R2 F2 D F2 U2 B2 U2 R2", "D F R' L2 D2 F D2 R' U' R L U2 B' D' L2 U' L2 D2 B2 U2", "F2 B' R F' U' R2 U2 L F' B2 L' B L2 B2 D F2 U' F2 B2", "F2 R2 F' U' R' B' L' F2 D' L' U F2 L2 D2 B2 D' F2 R2 L2", "D F2 R U' R' L2 U2 L2 F' R D2 F R2 U' F2 D F2 D L2 D", "U L2 B D' L D' B2 L2 B L' F R2 D' F2 D L2 D' F2 D2 L2"];
+const inv1=t=>t.length>1?(t[1]==="'"?t[0]:t):t+"'";
+const invS=a=>a.slice().reverse().map(inv1);
+const s4=Scene($('#sc4'));
+const g4={i:-1,n:0,run:0,busy:false,sol:[]};
+const g4s=mkBtn('','pri',()=>g4solve()),g4h=mkBtn('','',()=>g4new());$('#g4b').append(g4s,g4h);
+function g4new(){let i;do i=Math.floor(Math.random()*POOL20.length);while(POOL20.length>1&&i===g4.i);
+  g4.run++;g4.busy=false;g4.i=i;g4.sol=POOL20[i].split(' ');g4.n=0;s4.reset();s4.instant(invS(g4.sol));drawG();}
+async function g4solve(){
+  if(g4.busy||g4.n>=g4.sol.length)return;const r=++g4.run;g4.busy=true;drawG();
+  for(const t of g4.sol.slice(g4.n)){await s4.move(t);if(g4.run!==r)return;g4.n++;drawG();}
+  g4.busy=false;drawG();}
+function drawG(){
+  g4s.textContent=L('Los op binnen 20 zetten','Solve within 20 moves');g4h.textContent=L('Hussel','Shuffle');
+  const n=g4.n,tot=g4.sol.length,done=n>=tot;g4s.disabled=g4.busy||done;
+  $('#g4c').textContent=!n&&!g4.busy?L('Een gehusselde kubus. Tik op Los op.','A shuffled cube. Tap Solve.'):done?L('Opgelost in '+n+' zetten, binnen de 20.','Solved in '+n+' moves, within 20.'):L(n+(n===1?' zet':' zetten')+' gedaan',n+(n===1?' move':' moves')+' made');
+  $('#g4h').innerHTML=g4.sol.slice(0,n).map((t,k)=>'<div><span class="hn">'+(k+1)+'</span><span class="hk">'+t+'</span></div>').join('');
+}
+g4new();
+
+function initC(){
+  const Q=s=>document.querySelector(s),nf=n=>n.toLocaleString(LANG==='en'?'en-US':'nl-NL');
+  const C={w:'#f1f1ee',y:'#f2c230',r:'#d6382f',o:'#f08a24',b:'#2f6fd6',g:'#2ea85a'};
+  const corner=(o,s)=>{const c=[[C.w,C.g,C.r],[C.r,C.w,C.g],[C.g,C.r,C.w]][o%3];return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 60 60"><polygon points="30,8 51,20 30,32 9,20" fill="'+c[0]+'"/><polygon points="9,20 30,32 30,56 9,44" fill="'+c[1]+'"/><polygon points="51,20 30,32 30,56 51,44" fill="'+c[2]+'"/><path d="M30,8L51,20V44L30,56L9,44V20Z M9,20L30,32L51,20M30,32V56" fill="none" stroke="#111" stroke-width="2" stroke-linejoin="round"/></svg>';};
+  const box=(t,bg,fg,w)=>'<div style="width:'+w+'px;height:'+w+'px;display:flex;align-items:center;justify-content:center;background:'+bg+';color:'+fg+';border-radius:var(--r);font:500 13px var(--font-mono)">'+t+'</div>';
+  const row=(a,w)=>'<div style="display:flex;gap:4px;justify-content:center">'+a.join('')+'</div>';
+  const V=[
+    ()=>row([0,1,2,0,2,1,1,0].map(o=>corner(o,34)),34),
+    ()=>'<div style="text-align:center">'+row([8,7,6,5,4,3,2,1].map(k=>box(k,'var(--bg)','var(--ink)',34)),34)+'<div class="ro" style="margin-top:var(--space-2)">'+L('aantal keuzes per hoekje','choices per corner')+'</div></div>',
+    ()=>'<div style="text-align:center"><div style="display:flex;gap:var(--space-4);justify-content:center">'+[0,1,2].map(o=>'<div>'+corner(o,64)+'<div class="ro">'+L('draaiing ','twist ')+o+'</div></div>').join('')+'</div></div>',
+    ()=>{const R=[[[0,0,0,0,0,0,0,1],0],[[0,1,0,0,2,0,0,0],1],[[1,1,1,0,0,0,0,0],1]];return '<div>'+R.map(r=>'<div style="margin:0 0 6px;text-align:center">'+row(r[0].map(v=>box(v,v?'var(--off)':'var(--bg)','var(--ink)',24)),24)+'<div class="ro" style="color:var(--'+(r[1]?'ok':'bad')+')">'+L('som ','sum ')+r[0].reduce((x,y)=>x+y,0)+': '+(r[1]?L('kan wel','possible'):L('kan niet','impossible'))+'</div></div>').join('')+'</div>';},
+    ()=>{let h='<div style="display:grid;grid-template-columns:repeat(6,34px);gap:4px">';for(let r=0;r<4;r++)for(const c of ['w','y','r','o','b','g'])h+='<svg width="34" height="28" viewBox="0 0 34 28"><rect width="34" height="28" rx="2" fill="'+C[c]+'"/><g transform="rotate('+(r*90)+' 17 14)"><polygon points="17,4 23,14 11,14" fill="#111"/></g></svg>';return h+'</div>';},
+    ()=>'<svg width="150" height="120" viewBox="0 0 150 120"><defs><marker id="xm" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0L8,4L0,8Z" fill="var(--muted)"/></marker></defs><g stroke="var(--muted)" stroke-width="2" fill="none" marker-end="url(#xm)"><path d="M52,26H92" marker-end="url(#xm)"/><path d="M122,50V70" marker-end="url(#xm)"/><path d="M98,94H58" marker-end="url(#xm)"/><path d="M28,70V50" marker-end="url(#xm)"/></g><circle cx="30" cy="26" r="16" fill="'+C.w+'"/><circle cx="120" cy="26" r="16" fill="'+C.r+'"/><circle cx="120" cy="94" r="16" fill="'+C.g+'"/><circle cx="30" cy="94" r="16" fill="'+C.o+'"/></svg>'
+  ];
+  const S=[
+    [['Stap 0','Step 0'],['Acht hoekjes, elk met drie gekleurde kanten. Tik op Stap +1 en tel mee.','Eight corners, each with three coloured sides. Tap Step +1 and count along.'],''],
+    [['Plekken','Places'],['Het eerste hoekje kan op 8 plekken liggen, het tweede op 7, het derde op 6, enzovoort. Samen 8 × 7 × 6 × 5 × 4 × 3 × 2 × 1 volgorden.','The first corner can sit in 8 places, the second in 7, the third in 6, and so on. Together 8 × 7 × 6 × 5 × 4 × 3 × 2 × 1 orders.'],()=>'8! = '+nf(40320)],
+    [['Draaiingen','Twists'],['Elk hoekje past op 3 manieren in zijn plek, want het heeft drie gekleurde kanten. Dat is 3 × 3 × … = 3⁸ = 6.561 per volgorde.','Each corner fits its place in 3 ways, because it has three coloured sides. That is 3 × 3 × … = 3⁸ = 6,561 per order.'],()=>nf(40320)+' × '+nf(6561)+' = '+nf(264539520)],
+    [['Draairegel','Twist rule'],['Maar niet elke stand is met draaien te maken. Haal je de kubus uit elkaar en draai je één hoekje alleen, dan los je hem nooit meer op. Geef elke draaiing een getal (0, 1 of 2): de som is bij draaien altijd een veelvoud van 3. Zo blijft een derde over.','But not every position can be made by turning. Take the cube apart and twist one corner alone, and you can never solve it. Give each twist a number (0, 1 or 2): when turning, the sum is always a multiple of 3. A third remains.'],()=>nf(264539520)+' ÷ 3 = '+nf(88179840)],
+    [['Vasthouden','Holding'],['De 2×2×2 heeft geen middens. Dezelfde kubus anders vasthouden is dus geen nieuwe stand. Er zijn 6 bovenkanten en 4 kwartslagen daaromheen: 24 houdingen. Deel daarom door 24.','The 2×2×2 has no centres. Holding the same cube differently is not a new position. There are 6 top faces and 4 quarter turns around each: 24 ways to hold it. So divide by 24.'],()=>nf(88179840)+' ÷ 24 = '+nf(3674160)],
+    [['Verwisselen','Swapping'],['Een kwartslag zet vier hoekjes in een kring. Dat is een oneven wisseling, dus die kan wel. Je deelt hier niet nog eens door 2. Bij de 3×3×3 hangen hoeken en randen aan elkaar vast en mag het niet.','A quarter turn moves four corners in a circle. That is an odd swap, so it is possible. You do not divide by 2 again here. On the 3×3×3 corners and edges are tied together and it is not allowed.'],()=>'= '+nf(3674160)+' '+L('standen','positions')]
+  ];
+  function draw(){
+    Q('#xh1').textContent=L('Hoeveel standen?','How many positions?');Q('#xs1').textContent=L('8 hoekjes, 3,7 miljoen','8 corners, 3.7 million');
+    Q('#xh2').textContent=L('Twee kanten','Two sides');Q('#xs2').textContent=L('van twee kanten zoeken','search from two sides');
+    Q('#xh3').textContent=L('Tabel','Table');Q('#xs3').textContent=L('lange reeksen afkappen','cut off long sequences');
+    Q('#xh4').textContent=L('De 3×3×3','The 3×3×3');Q('#xs4').textContent=L('twee fasen','two phases');
+    Q('#xp0').textContent=L('Een 2×2×2 heeft ongeveer 3,7 miljoen standen, met maar 8 hoekjes. Tel zelf mee.','A 2×2×2 has about 3.7 million positions, with just 8 corners. Count along.');
+    const pn='background:var(--surface);border-radius:var(--r);padding:var(--space-3);display:flex;align-items:center;justify-content:center;margin-top:var(--space-3)';
+    Q('#xsteps').innerHTML='<div style="'+pn+'">'+V[0]()+'</div>'+S.slice(1).map((s,k)=>'<div style="margin-top:var(--space-4)"><b>'+(k+1)+' · '+L(s[0][0],s[0][1])+'</b><p class="small" style="margin:var(--space-1) 0 0">'+L(s[1][0],s[1][1])+'</p><div style="'+pn+'">'+V[k+1]()+'</div><div class="ro" style="margin-top:var(--space-2);color:var(--ink)">'+s[2]()+'</div></div>').join('');
+  }
+  draw();return draw;
+}
+const drawC=initC();
+const updX=accord($$('#xparts>details'),$('#expx'),true);
+
+function initX(){
+  const Q=s=>document.querySelector(s),nf=n=>n.toLocaleString(LANG==='en'?'en-US':'nl-NL');
+  const G={U:{cp:[3,0,1,2,4,5,6,7],co:[0,0,0,0,0,0,0,0]},R:{cp:[4,1,2,0,7,5,6,3],co:[2,0,0,1,1,0,0,2]},F:{cp:[1,5,2,3,0,4,6,7],co:[1,2,0,0,2,1,0,0]}};
+  const mul=(a,b)=>{const cp=new Array(8),co=new Array(8);for(let i=0;i<8;i++){cp[i]=a.cp[b.cp[i]];co[i]=(a.co[b.cp[i]]+b.co[i])%3;}return{cp,co};};
+  const ID={cp:[0,1,2,3,4,5,6,7],co:[0,0,0,0,0,0,0,0]},key=s=>s.cp.join('')+s.co.join(''),KID=key(ID),isId=s=>key(s)===KID;
+  const MV=[],NM=[];for(const f of 'URF'){const m1=G[f],m2=mul(m1,m1),m3=mul(m2,m1);MV.push(m1,m2,m3);NM.push(f,f+'2',f+"'");}
+  const ivm=m=>Math.floor(m/3)*3+(2-m%3),fc=m=>Math.floor(m/3),word=a=>a.map(m=>NM[m]).join(' '),apl=(s,w)=>w.reduce((x,m)=>mul(x,MV[m]),s);
+  let S=null,scr=[],T=null;const redraw={};
+  function hussel(){let l=-1;scr=[];while(scr.length<7){const m=Math.floor(Math.random()*9);if(fc(m)===l)continue;l=fc(m);scr.push(m);}S=apl(ID,scr);Q('#xr1').innerHTML='';Q('#xr2').innerHTML='';['#xone','#xtwo','#xnotab','#xtab'].forEach(x=>Q(x).classList.remove('pri'));redraw.xr1=redraw.xr2=null;draw();}
+  const walk=(M,k)=>{const w=[];let e;while((e=M.get(k)).p!==null){w.push(e.m);k=e.p;}return w.reverse();};
+  function one(S){const A=new Map([[key(S),{p:null,m:-1}]]);if(isId(S))return{sol:[],n:1};let F=[S];
+    while(F.length){const N=[];for(const s of F){const ks=key(s);for(let m=0;m<9;m++){const t=mul(s,MV[m]),kt=key(t);if(A.has(kt))continue;A.set(kt,{p:ks,m});if(kt===KID)return{sol:walk(A,kt),n:A.size};N.push(t);}}F=N;}}
+  function two(S){if(isId(S))return{sol:[],n:2};const A=new Map([[key(S),{p:null,m:-1}]]),B=new Map([[KID,{p:null,m:-1}]]);let fa=[S],fb=[ID];
+    while(true){const ua=fa.length<=fb.length,F=ua?fa:fb,M=ua?A:B,O=ua?B:A,N=[];
+      for(const s of F){const ks=key(s);for(let m=0;m<9;m++){const t=mul(s,MV[m]),kt=key(t);if(M.has(kt))continue;M.set(kt,{p:ks,m});N.push(t);
+        if(O.has(kt)){const a=walk(A,kt),b=walk(B,kt);return{sol:a.concat(b.slice().reverse().map(ivm)),n:A.size+B.size};}}}
+      if(ua)fa=N;else fb=N;}}
+  function table(){if(T)return T;T=new Map([[KID,0]]);let F=[ID];for(let d=1;d<=6;d++){const N=[];for(const s of F)for(let m=0;m<9;m++){const t=mul(s,MV[m]),k=key(t);if(!T.has(k)){T.set(k,d);N.push(t);}}F=N;}return T;}
+  function ida(S,tab){let nodes=0,path=[];const TT=tab?table():null;
+    const h=s=>tab?(TT.get(key(s))??7):(isId(s)?0:1);
+    function dfs(s,g,lim,l){nodes++;if(g+h(s)>lim)return false;if(isId(s))return true;if(g===lim)return false;
+      for(let m=0;m<9;m++){if(fc(m)===l)continue;path.push(m);if(dfs(mul(s,MV[m]),g+1,lim,fc(m)))return true;path.pop();}return false;}
+    for(let lim=h(S);lim<=12;lim++){path=[];if(dfs(S,0,lim,-1))return{sol:path.slice(),n:nodes};}}
+  function show(id,title,r,ms){const ok=isId(apl(S,r.sol));
+    Q(id).innerHTML='<span><span>'+L(title[0],title[1])+'</span> <b>'+nf(r.n)+' '+L('standen','positions')+'</b></span><span><span>'+L('oplossing','solution')+'</span> <b>'+r.sol.length+' '+L('zetten','moves')+'</b></span><span style="white-space:normal;color:var(--muted)">'+word(r.sol)+(ok?'':' (!)')+'</span><span><span>'+L('duur','time')+'</span> <b>'+Math.round(ms)+' ms</b></span>';}
+  const GRP={'#xr1':['#xone','#xtwo'],'#xr2':['#xnotab','#xtab']};
+  function run(id,title,fn,btn){if(!S)return;GRP[id].forEach(x=>Q(x).classList.toggle('pri',x===btn));Q(id).textContent=L('Zoeken…','Searching…');redraw[id.slice(1)]=null;setTimeout(()=>{const t=performance.now(),r=fn(S),ms=performance.now()-t;redraw[id.slice(1)]=()=>show(id,title,r,ms);redraw[id.slice(1)]();},30);}
+  Q('#xhus').onclick=hussel;
+  Q('#xone').onclick=()=>run('#xr1',['één kant','one side'],one,'#xone');Q('#xtwo').onclick=()=>run('#xr1',['twee kanten','two sides'],two,'#xtwo');
+  Q('#xnotab').onclick=()=>run('#xr2',['zonder tabel','without table'],s=>ida(s,false),'#xnotab');Q('#xtab').onclick=()=>run('#xr2',['met tabel','with table'],s=>ida(s,true),'#xtab');
+  const BIG=[['alle standen','all positions','43.252.003.274.489.856.000','43,252,003,274,489,856,000',19.64],['families na fase 1','families after phase 1','2.217.093.120','2,217,093,120',9.35],['standen per familie','positions per family','19.508.428.800','19,508,428,800',10.29]];
+  function draw(){
+    Q('#xhus').textContent=L('Hussel','Shuffle');Q('#xone').textContent=L('Eén kant','One side');Q('#xtwo').textContent=L('Twee kanten','Two sides');Q('#xnotab').textContent=L('Zonder tabel','Without table');Q('#xtab').textContent=L('Met tabel','With table');
+    Q('#xsc').textContent=scr.length?L('hussel: ','shuffle: ')+word(scr):'–';
+    Q('#xtabinfo').textContent=L('De tabel hier kent de 62.360 standen die hoogstens 6 zetten van opgelost zijn. Voor elke andere stand weet hij: minstens 7. Zonder tabel telt de computer elke zet als mogelijk.','The table here knows the 62,360 positions that are at most 6 moves from solved. For every other position it knows: at least 7. Without the table the computer counts every move as possible.');
+    Q('#xbig').innerHTML=BIG.map(b=>'<div style="margin:0 0 var(--space-3)"><div class="ro" style="display:flex;justify-content:space-between"><span>'+L(b[0],b[1])+'</span><span>'+L(b[2],b[3])+'</span></div><div style="height:8px;background:var(--bg);border-radius:2px;margin-top:4px"><div style="height:8px;width:'+(b[4]/19.64*100)+'%;background:var(--accent);border-radius:2px"></div></div></div>').join('')+'<div class="ro">'+L('lengte van de balk: log van het aantal','bar length: log of the number')+'</div>';
+    ['xr1','xr2'].forEach(k=>{if(redraw[k])redraw[k]();});
+  }
+  hussel();return draw;
+}
+const drawX=initX();
+
+applyLang();
+applyLetters(LDEF);
+</script></body></html>
